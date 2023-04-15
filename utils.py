@@ -3,13 +3,36 @@ import os
 import yaml
 
 
+# Load tokens and IDs from file
 def load_tokens_and_ids(bank_name):
-    if os.path.exists(f"connections/{bank_name}_tokens_and_ids.yaml"):
-        with open(f"connections/{bank_name}_tokens_and_ids.yaml", "r") as f:
+    connections_path = 'connections'
+    if not os.path.exists(connections_path):
+        os.makedirs(connections_path)
+
+    connection_file = os.path.join(connections_path, f"{bank_name}.yaml")
+
+    if os.path.exists(connection_file):
+        with open(connection_file, "r") as f:
             return yaml.safe_load(f)
     return {}
 
 
-def save_tokens_and_ids(tokens_and_ids, bank_name):
-    with open(f"connections/{bank_name}_tokens_and_ids.yaml", "w") as f:
+# Save tokens and IDs to file
+def save_tokens_and_ids(bank_name, tokens_and_ids):
+    connections_path = 'connections'
+    if not os.path.exists(connections_path):
+        os.makedirs(connections_path)
+
+    connection_file = os.path.join(connections_path, f"{bank_name}.yaml")
+
+    with open(connection_file, "w") as f:
         yaml.dump(tokens_and_ids, f)
+
+
+# List all the connections
+def list_connections():
+    connections_path = 'connections'
+    if not os.path.exists(connections_path):
+        os.makedirs(connections_path)
+    yaml_files = [f for f in os.listdir(connections_path) if f.endswith(".yaml")]
+    return [os.path.splitext(file)[0] for file in yaml_files]

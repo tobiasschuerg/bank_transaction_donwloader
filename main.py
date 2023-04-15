@@ -1,13 +1,14 @@
 # main.py
 
 import csv
+import os
 from uuid import uuid4
 
 import yaml
 from nordigen import NordigenClient
 
 from credentials import load_credentials
-from utils import load_tokens_and_ids, save_tokens_and_ids
+from utils import load_tokens_and_ids, save_tokens_and_ids, list_connections
 
 # Load credentials from file or prompt user
 credentials = load_credentials()
@@ -18,8 +19,20 @@ client = NordigenClient(
     secret_key=credentials["SECRET_KEY"]
 )
 
-# Prompt the user for the bank name
-bank_name = input("Enter the bank name: ")
+# List existing connections
+connections = list_connections()
+
+# Prompt the user for the bank name or select an existing connection
+print("Enter the bank name or choose from the list of existing connections:")
+for idx, connection in enumerate(connections):
+    print(f"{idx}. {connection}")
+
+choice = input("> ")
+
+if choice.isdigit() and int(choice) < len(connections):
+    bank_name = connections[int(choice)]
+else:
+    bank_name = choice
 
 # Load tokens and IDs from file
 tokens_and_ids = load_tokens_and_ids(bank_name)
@@ -67,7 +80,7 @@ if "requisition_id" not in tokens_and_ids:
     requisition_id = session.requisition_id
 
     tokens_and_ids["requisition_id"] = requisition_id
-    save_tokens_and_ids(tokens_and_ids, bank_name)
+    save_tokens_and_ids(bank_name, tokens_and_ids)
     input("use the link above to authorize and press any key")
 else:
     requisition_id = tokens_and_ids["requisition_id"]
@@ -77,46 +90,60 @@ accounts = client.requisition.get_requisition_by_id(
     requisition_id=requisition_id
 )
 
-print("Accounts:", )
-for idx, x in enumerate(accounts['accounts']):
-    print(idx, x)
-
 # Choose an account ID to fetch transactions
-account_index = input("Enter the account ID to fetch transactions: ")
+if len(accounts['accounts']) == 1:
+    account_index = 0
+else:
+    print("Accounts:")
+    for idx, x in enumerate(accounts['accounts']):
+        print(idx, x)
+    account_index = input("Enter the account ID to fetch transactions: ")
+
 account = client.account_api(id=accounts['accounts'][int(account_index)])
 
 # Fetch account metadata
 meta_data = account.get_metadata()
-print("Account metadata:", meta_data)
+print(f"Account: {meta_data['iban']} {meta_data['owner_name']}")
 
 # Fetch details
-details = account.get_details()
-print("Account details:", details)
+# details = account.get_details()
+# print("Account details:", details)
 
 # Fetch balances
 balances = account.get_balances()
 print("Account balances:", balances)
 
 # Fetch transactions for the selected account
-transactions = account.get_transactions()['transactions']['booked']
+transactions = account.get_transactions(date_from="2023-01-01")['transactions']['booked']
 
 print("Transactions:", transactions)
 
 # Save transactions to CSV
-csv_filename = f"{bank_name}_{meta_data['iban']}_transactions.csv"
+csv_folder = "transactions"
+if not os.path.exists(csv_folder):
+    os.makedirs(csv_folder)
 
-with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
-    fieldnames = ["transactionId", "bookingDate", "valueDate", "amount", "currency", "description"]
+csv_filename = f"{bank_name}_{meta_data['iban']}_transactions.csv"
+csv_filepath = os.path.join(csv_folder, csv_filename)
+
+with open(csv_filepath, "w", newline="", encoding="utf-8") as csvfile:
+    fieldnames = ["transactionId", "bookingDate", "valueDate", "amount", "currency", "description", "creditorName",
+                  "creditorAccount", "debtorAccount"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
     for transaction in transactions:
+        transaction_id = transaction.get("transactionId", transaction.get("internalTransactionId"))
         writer.writerow({
-            "transactionId": transaction["transactionId"],
+            "transactionId": transaction_id,
             "bookingDate": transaction["bookingDate"],
             "valueDate": transaction["valueDate"],
             "amount": transaction["transactionAmount"]['amount'],
             "currency": transaction['transactionAmount']["currency"],
-            "description": transaction["remittanceInformationUnstructured"],
+            "description": transaction.get("remittanceInformationUnstructured",
+                                           transaction.get("remittanceInformationUnstructuredArray")),
+            "creditorName": transaction.get("creditorName", ""),
+            "creditorAccount": transaction.get("creditorAccount", {}).get("iban", ""),
+            "debtorAccount": transaction.get("debtorAccount", {}).get("iban", ""),
         })
 
-print(f"Transactions saved to {csv_filename}")
+print(f"Transactions saved to {csv_filepath}")
