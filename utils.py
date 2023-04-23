@@ -1,32 +1,32 @@
 import os
+from uuid import uuid4
 
 import yaml
 
 
-# Load tokens and IDs from file
-def load_tokens_and_ids(bank_name):
+def load_connection_details(file):
     connections_path = 'connections'
     if not os.path.exists(connections_path):
         os.makedirs(connections_path)
-
-    connection_file = os.path.join(connections_path, f"{bank_name}.yaml")
+    connection_file = os.path.join(connections_path, file)
 
     if os.path.exists(connection_file):
         with open(connection_file, "r") as f:
             return yaml.safe_load(f)
-    return {}
+    else:
+        raise FileNotFoundError(connection_file)
 
 
 # Save tokens and IDs to file
-def save_tokens_and_ids(bank_name, tokens_and_ids):
+def store_connection(connection):
     connections_path = 'connections'
     if not os.path.exists(connections_path):
         os.makedirs(connections_path)
 
-    connection_file = os.path.join(connections_path, f"{bank_name}.yaml")
+    connection_file = os.path.join(connections_path, f"{connection['bank_name']}.yaml")
 
     with open(connection_file, "w") as f:
-        yaml.dump(tokens_and_ids, f)
+        yaml.dump(connection, f)
 
 
 # List all the connections
@@ -35,4 +35,58 @@ def list_connections():
     if not os.path.exists(connections_path):
         os.makedirs(connections_path)
     yaml_files = [f for f in os.listdir(connections_path) if f.endswith(".yaml")]
-    return [os.path.splitext(file)[0] for file in yaml_files]
+    return [load_connection_details(file) for file in yaml_files]
+
+
+def get_requisition_id(nordigen_client, connection_details):
+    if "bank_name" not in connection_details:
+        name = input("Give this bank connection a custom name: ")
+        if len(name) == 0:
+            raise ValueError("name cannot be empty")
+        connection_details["bank_name"] = name
+        store_connection(connection_details)
+
+    if "requisition_id" in connection_details:
+        return connection_details["requisition_id"]
+    else:
+        # Initialize bank session
+        print("Initializing bank session...")
+        session = nordigen_client.initialize_session(
+            institution_id=connection_details["institution_id"],
+            redirect_uri="https://nordigen.com",
+            reference_id=str(uuid4()),
+            max_historical_days=90
+        )
+
+        # Get requisition_id and link to initiate authorization process with a bank
+        link = session.link
+        print(f"Bank authorization link: {link}")
+        requisition_id = session.requisition_id
+
+        connection_details["requisition_id"] = requisition_id
+        store_connection(connection_details)
+        input("use the link above to authorize and press any key")
+        return requisition_id
+
+
+def select_bank_connection(nordigen_client):
+    connections = list_connections()
+    # Prompt the user for the bank name or select an existing connection
+    print("Enter the bank name or choose from the list of existing connections:")
+    for idx, connection in enumerate(connections):
+        print(idx, connection.get("bank_name", connection["institution_id"]))
+    choice = input("> ")
+    if choice.isdigit() and int(choice) < len(connections):
+        connection_details = connections[int(choice)]
+        print("Using existing institution ID.")
+    else:
+        bank_name = choice
+        print(f"Getting institution ID for {choice}...")
+        institution_id = nordigen_client.institution.get_institution_id_by_name(
+            country="DE",
+            institution=choice
+        )
+        connection_details = {"institution_id": institution_id}
+        store_connection(connection_details)
+        print(f"Institution ID for {choice}: {institution_id}")
+    return connection_details
