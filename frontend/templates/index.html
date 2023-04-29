@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <!-- Add Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container-fluid">
+<h1 class="my-4">Transactions</h1>
+<!-- Add an id attribute to the form -->
+<form id="bank-filter-form" method="GET" action="/">
+    <div class="mb-3">
+        <label for="bankName" class="form-label">Filter by bank</label>
+        <select class="form-select" name="bankName" id="bankName">
+            <option value="">All banks</option>
+            {% for bank in banks %}
+            <option value="{{ bank[0] }}" {% if selected_bank== bank[0] %}selected{% endif %}>{{ bank[0] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
+<!-- Add checkboxes for toggling Creditor Account and Debtor Account columns -->
+<div class="form-check form-switch my-3">
+    <input class="form-check-input" type="checkbox" id="toggleCreditorAccount" checked>
+    <label class="form-check-label" for="toggleCreditorAccount">Show Creditor Account</label>
+</div>
+<div class="form-check form-switch my-3">
+    <input class="form-check-input" type="checkbox" id="toggleDebtorAccount" checked>
+    <label class="form-check-label" for="toggleDebtorAccount">Show Debtor Account</label>
+</div>
+
+<!-- Update the table headers and rows -->
+<div class="table-responsive">
+    <table class="table table-striped my-4">
+        <thead>
+        <tr>
+            <th scope="col">Transaction #</th>
+            <th scope="col">Bank Name</th>
+            <th scope="col">Booking Date</th>
+            <th scope="col">Value Date</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Description</th>
+            <th scope="col">Creditor Name</th>
+            <th scope="col" class="creditor-account">Creditor Account</th>
+            <th scope="col" class="debtor-account">Debtor Account</th>
+        </tr>
+        </thead>
+
+        <tbody>
+{% for transaction in transactions %}
+    <tr class="{% if transaction[5] > 0 %}table-success{% elif transaction[5] < -100 %}table-danger{% endif %}">
+        {% for value in transaction %}
+            {% set idx = loop.index %}
+            {% if idx == 6 %}
+                <td>{{ value }} {{ transaction[6] }}</td>
+            {% elif idx == 2 %}
+                <td data-bs-toggle="tooltip" data-bs-placement="top" title="IBAN: {{ transaction[2] }}">{{ value }}</td>
+            {% elif idx != 3 and idx != 7 %}
+                <td class="{% if idx == 10 %}creditor-account{% elif idx == 11 %}debtor-account{% endif %}">{{ value }}</td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+{% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<!-- Include the separate script.js file -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+
