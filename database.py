@@ -2,11 +2,10 @@ import os
 import sqlite3
 
 
-def connect_to_db():
-    db_folder = "transactions"
+def connect_to_db(db_folder="transactions", db_filename="transactions.db"):
     if not os.path.exists(db_folder):
         os.makedirs(db_folder)
-    db_filename = "transactions.db"
+
     db_filepath = os.path.join(db_folder, db_filename)
     conn = sqlite3.connect(db_filepath)
     c = conn.cursor()

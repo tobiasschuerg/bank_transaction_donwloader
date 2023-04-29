@@ -11,6 +11,14 @@ document.getElementById("toggleCreditorAccount").addEventListener("change", func
     }
 });
 
+function hideColumn(columnClass) {
+    const display = "none";
+    const cells = document.getElementsByClassName(columnClass);
+    for (let i = 0; i < cells.length; i++) {
+        cells[i].style.display = display;
+    }
+}
+
 // Toggle Debtor Account column visibility
 document.getElementById("toggleDebtorAccount").addEventListener("change", function () {
     const display = this.checked ? "" : "none";
@@ -31,6 +39,10 @@ for (const cell of dateCells) {
 
 // Initialize Bootstrap tooltips
 document.addEventListener("DOMContentLoaded", function () {
+    // Hide columns on page load
+    hideColumn("creditor-account");
+    hideColumn("debtor-account");
+
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);

@@ -24,11 +24,11 @@
 
 <!-- Add checkboxes for toggling Creditor Account and Debtor Account columns -->
 <div class="form-check form-switch my-3">
-    <input class="form-check-input" type="checkbox" id="toggleCreditorAccount" checked>
+    <input class="form-check-input" type="checkbox" id="toggleCreditorAccount">
     <label class="form-check-label" for="toggleCreditorAccount">Show Creditor Account</label>
 </div>
 <div class="form-check form-switch my-3">
-    <input class="form-check-input" type="checkbox" id="toggleDebtorAccount" checked>
+    <input class="form-check-input" type="checkbox" id="toggleDebtorAccount">
     <label class="form-check-label" for="toggleDebtorAccount">Show Debtor Account</label>
 </div>
 
@@ -50,20 +50,23 @@
         </thead>
 
         <tbody>
-{% for transaction in transactions %}
-    <tr class="{% if transaction[5] > 0 %}table-success{% elif transaction[5] < -100 %}table-danger{% endif %}">
-        {% for value in transaction %}
-            {% set idx = loop.index %}
-            {% if idx == 6 %}
-                <td>{{ value }} {{ transaction[6] }}</td>
-            {% elif idx == 2 %}
-                <td data-bs-toggle="tooltip" data-bs-placement="top" title="IBAN: {{ transaction[2] }}">{{ value }}</td>
-            {% elif idx != 3 and idx != 7 %}
-                <td class="{% if idx == 10 %}creditor-account{% elif idx == 11 %}debtor-account{% endif %}">{{ value }}</td>
-            {% endif %}
+        {% for transaction in transactions %}
+        <tr class="{% if transaction[5] > 0 %}table-success{% elif transaction[5] < -100 %}table-danger{% endif %}">
+            <td>{{ transaction[0] }}</td>
+            <td data-bs-toggle="tooltip" data-bs-placement="top" title="IBAN: {{ transaction[2] }}">
+                {{ transaction[1] }}
+            </td>
+            <td class="text-nowrap">{{ transaction[3] }}</td>
+            <td class="text-nowrap">{{ transaction[4] }}</td>
+            <td class="{% if transaction[5] > 0 %}text-success{% elif transaction[5] < 0 %}text-danger{% endif %}">
+                {{ transaction[5] }}&nbsp;{{ transaction[6] }}
+            </td>
+            <td>{{ transaction[7] }}</td>
+            <td>{{ transaction[8] }}</td>
+            <td class="creditor-account">{{ transaction[9] }}</td>
+            <td class="debtor-account">{{ transaction[10] }}</td>
+        </tr>
         {% endfor %}
-    </tr>
-{% endfor %}
 
         </tbody>
     </table>
