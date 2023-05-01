@@ -1,4 +1,5 @@
 import os
+import pprint
 from uuid import uuid4
 
 import yaml
@@ -55,7 +56,7 @@ def get_requisition_id(nordigen_client, connection_details):
             institution_id=connection_details["institution_id"],
             redirect_uri="https://nordigen.com",
             reference_id=str(uuid4()),
-            max_historical_days=90
+            max_historical_days=connection_details["institution_total_days"]
         )
 
         # Get requisition_id and link to initiate authorization process with a bank
@@ -65,7 +66,7 @@ def get_requisition_id(nordigen_client, connection_details):
 
         connection_details["requisition_id"] = requisition_id
         store_connection(connection_details)
-        input("use the link above to authorize and press any key")
+        input("use the link above to authorize and press <enter>")
         return requisition_id
 
 
@@ -80,13 +81,18 @@ def select_bank_connection(nordigen_client):
         connection_details = connections[int(choice)]
         print("Using existing institution ID.")
     else:
-        bank_name = choice
         print(f"Getting institution ID for {choice}...")
         institution_id = nordigen_client.institution.get_institution_id_by_name(
             country="DE",
             institution=choice
         )
-        connection_details = {"institution_id": institution_id}
-        store_connection(connection_details)
+        institution = nordigen_client.institution.get_institution_by_id(institution_id)
+        pprint.pprint(institution)
+
+        connection_details = {
+            "institution_id": institution_id,
+            "institution_logo": institution['logo'],
+            "institution_total_days": institution['transaction_total_days']
+        }
         print(f"Institution ID for {choice}: {institution_id}")
     return connection_details
