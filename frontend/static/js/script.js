@@ -48,3 +48,86 @@ document.addEventListener("DOMContentLoaded", function () {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Add event listeners for save-category buttons
+    fetchCategories();
+    const saveCategoryButtons = document.querySelectorAll(".save-category");
+    saveCategoryButtons.forEach((button) => {
+        button.addEventListener("click", function (event) {
+            const selectElement = event.target.previousElementSibling;
+            const category = selectElement.value;
+            const transactionId = event.target.parentElement.parentElement.firstElementChild.innerText;
+            saveCategory(transactionId, category);
+        });
+    });
+});
+
+async function fetchCategories() {
+    const response = await fetch('/categories');
+    const categories = await response.json();
+    const categoryDropdowns = document.querySelectorAll('.category-select');
+    categoryDropdowns.forEach(async (dropdown) => {
+        const transactionDescription = dropdown.dataset.description;
+        let suggestedCategory = null;
+
+        if (transactionDescription) {
+            suggestedCategory = await getCategorySuggestion(transactionDescription);
+            console.log(transactionDescription, " -> ", suggestedCategory)
+        }
+
+        categories.forEach((categoryObj) => {
+            const option = document.createElement('option');
+            option.value = categoryObj.id;
+            option.innerText = categoryObj.category;
+            dropdown.appendChild(option);
+
+            if (suggestedCategory.suggested_category === categoryObj.category && suggestedCategory.confidence > 0.2) {
+                console.log("selected", transactionDescription, suggestedCategory)
+                option.selected = true;
+            }
+        });
+    });
+}
+
+
+async function saveCategory(transactionId, categoryId) {
+    console.log("category id:", categoryId)
+    const response = await fetch(`/transaction/${transactionId}/category`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category_id: categoryId }),
+    });
+
+    if (response.ok) {
+        location.reload();
+    } else {
+        console.error("Failed to save category");
+    }
+}
+
+async function getCategorySuggestion(transactionDescription) {
+    const formData = new FormData();
+    formData.append('transaction', transactionDescription);
+
+    const response = await fetch('http://127.0.0.1:5001/api/suggest_category', {
+        method: 'POST',
+        body: formData,
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        return data;
+    } else {
+        console.error('Failed to fetch category suggestion');
+        return null;
+    }
+}
+
+
+
+
+
+

@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transactions</title>
-    <!-- Add Bootstrap CSS -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 </head>
 <body class="container-fluid">
 <h1 class="my-4">Transactions</h1>
@@ -46,31 +48,56 @@
             <th scope="col">Creditor Name</th>
             <th scope="col" class="creditor-account">Creditor Account</th>
             <th scope="col" class="debtor-account">Debtor Account</th>
+            <th scope="col">Category</th>
         </tr>
         </thead>
 
         <tbody>
         {% for transaction in transactions %}
-        <tr class="{% if transaction[5] > 0 %}table-success{% elif transaction[5] < -100 %}table-danger{% endif %}">
-            <td>{{ transaction[0] }}</td>
-            <td data-bs-toggle="tooltip" data-bs-placement="top" title="IBAN: {{ transaction[2] }}">
-                {{ transaction[1] }}
+        <tr class="{% if transaction['amount'] > 0 %}table-success{% elif transaction['amount'] < -100 %}table-danger{% endif %}">
+            <td>{{ transaction['transactionId'] }}</td>
+            <td data-bs-toggle="tooltip" data-bs-placement="top" title="IBAN: {{ transaction['iban'] }}">
+                {{ transaction['bankName'] }}
             </td>
-            <td class="text-nowrap">{{ transaction[3] }}</td>
-            <td class="text-nowrap">{{ transaction[4] }}</td>
-            <td class="{% if transaction[5] > 0 %}text-success{% elif transaction[5] < 0 %}text-danger{% endif %}">
-                {{ transaction[5] }}&nbsp;{{ transaction[6] }}
+            <td class="text-nowrap">{{ transaction['bookingDate'] }}</td>
+            <td class="text-nowrap">{{ transaction['valueDate'] }}</td>
+            <td class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}">
+                {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
             </td>
-            <td>{{ transaction[7] }}</td>
-            <td>{{ transaction[8] }}</td>
+            <td>{{ transaction['description'] }}</td>
+            <td>{{ transaction['creditorName'] }}</td>
             <td class="creditor-account">{{ transaction[9] }}</td>
             <td class="debtor-account">{{ transaction[10] }}</td>
+            <td class="text-nowrap">
+                {% if transaction['category'] %}
+                {{ transaction['category'] }}
+                {% else %}
+                <div class="d-flex">
+                    <select class="form-select form-select-sm category-select" data-description="{{ transaction[7] }}">
+                        <option value="">Select category</option>
+                    </select>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-1"
+                            onclick="saveCategory('{{ transaction[0] }}', this.previousElementSibling.selectedOptions[0].value)">
+                        <i class="bi bi-check"></i>
+                    </button>
+
+                </div>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
 
         </tbody>
     </table>
 </div>
+
+<style>
+    .category-select {
+        min-width: 200px;
+        text-overflow: ellipsis;
+    }
+</style>
 
 <!-- Add Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

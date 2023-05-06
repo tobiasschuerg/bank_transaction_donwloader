@@ -8,23 +8,33 @@ def connect_to_db(db_folder="transactions", db_filename="transactions.db"):
 
     db_filepath = os.path.join(db_folder, db_filename)
     conn = sqlite3.connect(db_filepath)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Create tables for banks and transactions if they don't exist
-    c.execute('''CREATE TABLE IF NOT EXISTS banks (
-                    bankName text PRIMARY KEY,
-                    iban text NOT NULL)''')
-
+    # Create tables for transactions, banks, and categories
     c.execute('''CREATE TABLE IF NOT EXISTS transactions (
-                    transactionId text PRIMARY KEY,
-                    bankName text NOT NULL,
-                    bookingDate date NOT NULL,
-                    valueDate date,
-                    amount real NOT NULL,
-                    currency text,
-                    description text,
-                    creditorName text,
-                    creditorAccount text,
-                    debtorAccount text,
-                    FOREIGN KEY (bankName) REFERENCES banks(bankName))''')
+                        transactionId TEXT PRIMARY KEY,
+                        bankName TEXT NOT NULL,
+                        bookingDate TEXT NOT NULL,
+                        valueDate TEXT,
+                        amount REAL NOT NULL,
+                        currency TEXT NOT NULL,
+                        description TEXT,
+                        creditorName TEXT,
+                        creditorAccount TEXT,
+                        debtorAccount TEXT,
+                        category TEXT,
+                        FOREIGN KEY (bankName) REFERENCES banks (bankName),
+                        FOREIGN KEY (category) REFERENCES categories (category)
+                    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS banks (
+                        bankName TEXT PRIMARY KEY,
+                        iban TEXT NOT NULL
+                    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS categories (
+                        id INTEGER PRIMARY KEY,
+                        category TEXT NOT NULL UNIQUE
+                    )''')
+
+    conn.commit()
     return conn
