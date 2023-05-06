@@ -106,7 +106,7 @@ def insert_categories(categories_tuples):
 
     # Insert categories into the database
     count = 0
-    for _, category in categories_tuples:
+    for category, _ in categories_tuples:
         c.execute('''SELECT * FROM categories WHERE name = ?''', (category,))
         result = c.fetchone()
         if result is None:

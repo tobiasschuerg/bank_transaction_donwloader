@@ -69,10 +69,11 @@ async function fetchCategories() {
     const categoryDropdowns = document.querySelectorAll('.category-select');
     categoryDropdowns.forEach(async (dropdown) => {
         const transactionDescription = dropdown.dataset.description;
+        const transactionCreditor = dropdown.dataset.creditor;
         let suggestedCategoryData = null;
 
         if (transactionDescription) {
-            suggestedCategoryData = await getCategorySuggestion(transactionDescription);
+            suggestedCategoryData = await getCategorySuggestion(transactionCreditor + " " + transactionDescription);
             if (suggestedCategoryData && suggestedCategoryData.confidence > 0.2) {
                 dropdown.classList.add('suggested-category');
             }

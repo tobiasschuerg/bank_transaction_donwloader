@@ -47,12 +47,11 @@ def export_creditor_category(path):
     c = conn.cursor()
 
     # Retrieve creditor names and categories from the database
-    c.execute('''SELECT t.creditorName, c.name as category
+    c.execute('''SELECT t.description, t.creditorName, c.name as category
                 FROM transactions t
                 JOIN categories c ON t.categoryId = c.id
                 WHERE t.categoryId IS NOT NULL''')
     creditor_categories = c.fetchall()
-
 
     # Check if the directory exists, create it if it doesn't
     if not os.path.exists(path):
@@ -62,8 +61,8 @@ def export_creditor_category(path):
 
     with open(output_file, "w", encoding="utf-8") as classifier_file:
         classifier_file.write("data = [\n")
-        for name, category in creditor_categories:
-            classifier_file.write(f"    ('{name}', '{category}'),\n")
+        for description, name, category in creditor_categories:
+            classifier_file.write(f"    ('{category}', '{name}: {description}'),\n")
         classifier_file.write("]\n")
 
 

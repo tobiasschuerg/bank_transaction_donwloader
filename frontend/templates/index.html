@@ -73,7 +73,7 @@
                 {{ transaction['category'] }}
                 {% else %}
                 <div class="d-flex">
-                    <select class="form-select form-select-sm category-select" data-description="{{ transaction[7] }}">
+                    <select class="form-select form-select-sm category-select" data-description="{{ transaction['description'] }}" data-creditor="{{ transaction['creditorName'] }}">
                         <option value="">Select category</option>
                     </select>
 
