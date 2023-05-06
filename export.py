@@ -47,7 +47,7 @@ def export_creditor_category(path):
     c = conn.cursor()
 
     # Retrieve creditor names and categories from the database
-    c.execute('''SELECT DISTINCT t.creditorName, c.name as category
+    c.execute('''SELECT t.creditorName, c.name as category
                 FROM transactions t
                 JOIN categories c ON t.categoryId = c.id
                 WHERE t.categoryId IS NOT NULL''')
@@ -60,7 +60,7 @@ def export_creditor_category(path):
 
     output_file = os.path.join(path, "classifier_data.py")
 
-    with open(output_file, "w") as classifier_file:
+    with open(output_file, "w", encoding="utf-8") as classifier_file:
         classifier_file.write("data = [\n")
         for name, category in creditor_categories:
             classifier_file.write(f"    ('{name}', '{category}'),\n")

@@ -41,27 +41,31 @@ def connect_to_db(db_folder="data", db_filename="transactions.db"):
     return conn
 
 
-def get_transactions_from_db(selected_bank):
+def get_transactions_from_db(selected_bank, without_category=False):
     conn = connect_to_db()
     c = conn.cursor()
 
-    if selected_bank:
-        c.execute('''
+    query = '''
             SELECT t.*, b.bankName, b.iban , c.name as category
             FROM transactions t
             JOIN banks b ON t.bankId = b.id
             LEFT JOIN categories c ON t.categoryId = c.id
-            WHERE b.bankName = ?
-            ORDER BY t.bookingDate DESC
-        ''', (selected_bank,))
-    else:
-        c.execute('''
-            SELECT t.*, b.bankName, b.iban, c.name as category
-            FROM transactions t
-            JOIN banks b ON t.bankId = b.id
-            LEFT JOIN categories c ON t.categoryId = c.id
-            ORDER BY t.bookingDate DESC
-        ''')
+    '''
+
+    if selected_bank:
+        query += f'WHERE b.bankName = "{selected_bank}"'
+
+    if without_category:
+        if selected_bank:
+            query += " AND "
+        else:
+            query += " WHERE "
+        query += f'category IS NULL'
+
+    query += ' ORDER BY t.bookingDate DESC'
+    print(query)
+    c.execute(query)
+
     transactions = c.fetchall()
     conn.close()
     return transactions

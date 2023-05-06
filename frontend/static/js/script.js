@@ -69,11 +69,13 @@ async function fetchCategories() {
     const categoryDropdowns = document.querySelectorAll('.category-select');
     categoryDropdowns.forEach(async (dropdown) => {
         const transactionDescription = dropdown.dataset.description;
-        let suggestedCategory = null;
+        let suggestedCategoryData = null;
 
         if (transactionDescription) {
-            suggestedCategory = await getCategorySuggestion(transactionDescription);
-            console.log(transactionDescription, " -> ", suggestedCategory)
+            suggestedCategoryData = await getCategorySuggestion(transactionDescription);
+            if (suggestedCategoryData && suggestedCategoryData.confidence > 0.2) {
+                dropdown.classList.add('suggested-category');
+            }
         }
 
         categories.forEach((categoryObj) => {
@@ -82,13 +84,15 @@ async function fetchCategories() {
             option.innerText = categoryObj.category;
             dropdown.appendChild(option);
 
-            if (suggestedCategory.suggested_category === categoryObj.category && suggestedCategory.confidence > 0.2) {
-                console.log("selected", transactionDescription, suggestedCategory)
+            if (suggestedCategoryData && suggestedCategoryData.suggested_category === categoryObj.category && suggestedCategoryData.confidence > 0.2) {
+                console.log("selected", transactionDescription, suggestedCategoryData)
                 option.selected = true;
             }
         });
     });
 }
+
+
 
 
 async function saveCategory(transactionId, categoryId) {

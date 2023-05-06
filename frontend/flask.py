@@ -8,7 +8,10 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def index():
     selected_bank = request.args.get('bankName', '')
-    transactions = get_transactions_from_db(selected_bank)
+    filter_no_category = request.args.get('category_missing')
+
+    transactions = get_transactions_from_db(selected_bank, filter_no_category)
+
     banks = get_banks_from_db()
     return render_template('index.html', transactions=transactions, banks=banks, selected_bank=selected_bank)
 
