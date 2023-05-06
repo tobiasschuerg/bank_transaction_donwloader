@@ -1,20 +1,12 @@
 import csv
 import os
-import sqlite3
 from datetime import date, timedelta
 
 import database
-from database import connect_to_db
+from database import get_categories, get_transactions_from_db
 
 
 def export_transactions(output_dir, date=None):
-    # Connect to SQLite database
-    db_folder = "data"
-    db_filename = "transactions.db"
-    db_filepath = os.path.join(db_folder, db_filename)
-    conn = sqlite3.connect(db_filepath)
-    c = conn.cursor()
-
     transactions = database.get_transactions_from_db(None)
 
     # Group transactions by bank name
@@ -26,8 +18,6 @@ def export_transactions(output_dir, date=None):
             transactions_by_bank[bank_name] = (bank_iban, [])
         transactions_by_bank[bank_name][1].append(transaction)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
     for bank_name, (bank_iban, transactions) in transactions_by_bank.items():
         csv_filename = f"{bank_iban}_{bank_name}.csv"
         csv_filepath = os.path.join(output_dir, csv_filename)
@@ -43,31 +33,30 @@ def export_transactions(output_dir, date=None):
 
 
 def export_creditor_category(path):
-    conn = connect_to_db()
-    c = conn.cursor()
-
-    # Retrieve creditor names and categories from the database
-    c.execute('''SELECT t.description, t.creditorName, c.name as category
-                FROM transactions t
-                JOIN categories c ON t.categoryId = c.id
-                WHERE t.categoryId IS NOT NULL''')
-    creditor_categories = c.fetchall()
-
-    # Check if the directory exists, create it if it doesn't
-    if not os.path.exists(path):
-        os.makedirs(path)
+    categories = get_categories()
+    transactions = get_transactions_from_db()
 
     output_file = os.path.join(path, "classifier_data.py")
 
     with open(output_file, "w", encoding="utf-8") as classifier_file:
         classifier_file.write("data = [\n")
-        for description, name, category in creditor_categories:
-            classifier_file.write(f"    ('{category}', '{name}: {description}'),\n")
+        for category in categories:
+            classifier_file.write(f"    ('{category['category']}', '{category['category']}'),\n")
+
+        for transaction in transactions:
+            category_name = transaction['category']
+            if not category_name:
+                continue
+            classifier_file.write(
+                f"    ('{category_name}', '{transaction['debtorName']} {transaction['creditorName']} {transaction['description']}'),\n")
         classifier_file.write("]\n")
 
 
 if __name__ == "__main__":
     output_directory = "data"
+
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
 
     export_start_date = date.today() - timedelta(days=30)
     export_transactions(output_directory, export_start_date)

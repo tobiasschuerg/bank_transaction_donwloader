@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 async function fetchCategories() {
+  const minConfidence = 0.2;
   const response = await fetch("/categories");
   const categories = await response.json();
   const categoryDropdowns = document.querySelectorAll(".category-select");
@@ -82,9 +83,16 @@ async function fetchCategories() {
 
     if (transactionDescription) {
       suggestedCategoryData = await getCategorySuggestion(
-        transactionCreditor + " " + transactionDebtor + " " + transactionDescription
+        transactionCreditor +
+          " " +
+          transactionDebtor +
+          " " +
+          transactionDescription
       );
-      if (suggestedCategoryData && suggestedCategoryData.confidence > 0.4) {
+      if (
+        suggestedCategoryData &&
+        suggestedCategoryData.confidence > minConfidence
+      ) {
         dropdown.classList.add("suggested-category");
       }
     }
@@ -98,7 +106,7 @@ async function fetchCategories() {
       if (
         suggestedCategoryData &&
         suggestedCategoryData.suggested_category === categoryObj.category &&
-        suggestedCategoryData.confidence > 0.2
+        suggestedCategoryData.confidence > minConfidence
       ) {
         console.log("selected", transactionDescription, suggestedCategoryData);
         option.selected = true;

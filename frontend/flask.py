@@ -13,7 +13,7 @@ def index():
     transactions = get_transactions_from_db(selected_bank, filter_no_category)
 
     banks = get_banks_from_db()
-    return render_template('index.html', transactions=transactions, banks=banks, selected_bank=selected_bank)
+    return render_template('index.html', transactions=transactions, count=len(transactions), banks=banks, selected_bank=selected_bank)
 
 
 @app.route('/categories', methods=['GET'])

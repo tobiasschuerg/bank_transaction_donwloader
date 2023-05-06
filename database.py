@@ -43,7 +43,7 @@ def connect_to_db(db_folder="data", db_filename="transactions.db"):
     return conn
 
 
-def get_transactions_from_db(selected_bank, without_category=False):
+def get_transactions_from_db(selected_bank=None, without_category=False):
     conn = connect_to_db()
     c = conn.cursor()
 
