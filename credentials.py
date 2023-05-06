@@ -61,8 +61,10 @@ def create_nordigen_client():
             credentials["access_token"] = new_token["access"]
             credentials["token_expiry"] = new_token["access_expires"]
             save(credentials)
-            i = nordigen_client.institution.get_institutions("DE")
-            print(i)
+            institutions = nordigen_client.institution.get_institutions("DE")
+            print("supported banks (DE):")
+            for i in institutions:
+                print(" - " + i['name'])
         else:
             raise e
 

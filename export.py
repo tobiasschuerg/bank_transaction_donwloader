@@ -3,29 +3,25 @@ import os
 import sqlite3
 from datetime import date, timedelta
 
+import database
 from database import connect_to_db
 
 
 def export_transactions(output_dir, date=None):
     # Connect to SQLite database
-    db_folder = "transactions"
+    db_folder = "data"
     db_filename = "transactions.db"
     db_filepath = os.path.join(db_folder, db_filename)
     conn = sqlite3.connect(db_filepath)
     c = conn.cursor()
 
-    # Retrieve all transactions from the database
-    c.execute('''SELECT t.transactionId, t.bankName, t.bookingDate, t.valueDate, t.amount, t.currency, t.description, t.creditorName, t.creditorAccount, t.debtorAccount, b.iban
-                FROM transactions t
-                JOIN banks b ON t.bankName = b.bankName
-                WHERE t.bookingDate >= ?''', (date.isoformat(),))
-    transactions = c.fetchall()
+    transactions = database.get_transactions_from_db(None)
 
     # Group transactions by bank name
     transactions_by_bank = {}
     for transaction in transactions:
-        bank_name = transaction[1]
-        bank_iban = transaction[10]
+        bank_name = transaction['bankName']
+        bank_iban = transaction['iban']
         if bank_name not in transactions_by_bank:
             transactions_by_bank[bank_name] = (bank_iban, [])
         transactions_by_bank[bank_name][1].append(transaction)
@@ -51,10 +47,12 @@ def export_creditor_category(path):
     c = conn.cursor()
 
     # Retrieve creditor names and categories from the database
-    c.execute('''SELECT DISTINCT t.creditorName, t.category
+    c.execute('''SELECT DISTINCT t.creditorName, c.name as category
                 FROM transactions t
-                WHERE t.category IS NOT NULL''')
+                JOIN categories c ON t.categoryId = c.id
+                WHERE t.categoryId IS NOT NULL''')
     creditor_categories = c.fetchall()
+
 
     # Check if the directory exists, create it if it doesn't
     if not os.path.exists(path):

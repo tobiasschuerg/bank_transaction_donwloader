@@ -1,4 +1,5 @@
 import database
+from database import get_or_create_bank
 
 
 def store_transactions(transactions, bank_name, iban):
@@ -6,15 +7,7 @@ def store_transactions(transactions, bank_name, iban):
     conn = database.connect_to_db()
     c = conn.cursor()
 
-    # Insert the bank information into the database if it doesn't exist
-    c.execute('''SELECT bankName FROM banks WHERE bankName = ?''', (bank_name,))
-    result = c.fetchone()
-    if result is None:
-        c.execute('''INSERT INTO banks (bankName, iban)
-                    VALUES (?, ?)''', (
-            bank_name,
-            iban
-        ))
+    bank = get_or_create_bank(bank_name, iban)
 
     # Insert new transactions into the database
     for transaction in transactions:
@@ -22,10 +15,10 @@ def store_transactions(transactions, bank_name, iban):
         c.execute('''SELECT transactionId FROM transactions WHERE transactionId = ?''', (transaction_id,))
         result = c.fetchone()
         if result is None:
-            c.execute('''INSERT INTO transactions (transactionId, bankName, bookingDate, valueDate, amount, currency, description, creditorName, creditorAccount, debtorAccount)
+            c.execute('''INSERT INTO transactions (transactionId, bankId, bookingDate, valueDate, amount, currency, description, creditorName, creditorAccount, debtorAccount)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
                 transaction_id,
-                bank_name,
+                bank['id'],
                 transaction.get("bookingDate"),
                 transaction.get("valueDate", None),
                 transaction["transactionAmount"]['amount'],
