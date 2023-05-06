@@ -22,11 +22,13 @@ def connect_to_db(db_folder="data", db_filename="transactions.db"):
                         description TEXT,
                         creditorName TEXT,
                         creditorAccount TEXT,
+                        debtorName TEXT,
                         debtorAccount TEXT,
                         categoryId INTEGER,
                         FOREIGN KEY (bankId) REFERENCES banks (id),
                         FOREIGN KEY (categoryId) REFERENCES categories (id)
                     )''')
+
     c.execute('''CREATE TABLE IF NOT EXISTS banks (
                         id INTEGER PRIMARY KEY,
                         bankName TEXT NOT NULL UNIQUE,

@@ -77,13 +77,14 @@ async function fetchCategories() {
   categoryDropdowns.forEach(async (dropdown) => {
     const transactionDescription = dropdown.dataset.description;
     const transactionCreditor = dropdown.dataset.creditor;
+    const transactionDebtor = dropdown.dataset.debtor;
     let suggestedCategoryData = null;
 
     if (transactionDescription) {
       suggestedCategoryData = await getCategorySuggestion(
-        transactionCreditor + " " + transactionDescription
+        transactionCreditor + " " + transactionDebtor + " " + transactionDescription
       );
-      if (suggestedCategoryData && suggestedCategoryData.confidence > 0.2) {
+      if (suggestedCategoryData && suggestedCategoryData.confidence > 0.4) {
         dropdown.classList.add("suggested-category");
       }
     }

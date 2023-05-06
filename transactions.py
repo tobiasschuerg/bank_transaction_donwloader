@@ -1,3 +1,5 @@
+import re
+
 import database
 from database import get_or_create_bank
 
@@ -13,24 +15,34 @@ def store_transactions(transactions, bank_name, iban):
     for transaction in transactions:
         transaction_id = transaction.get("transactionId", transaction.get("internalTransactionId"))
         c.execute('''SELECT transactionId FROM transactions WHERE transactionId = ?''', (transaction_id,))
-        result = c.fetchone()
-        if result is None:
-            c.execute('''INSERT INTO transactions (transactionId, bankId, bookingDate, valueDate, amount, currency, description, creditorName, creditorAccount, debtorAccount)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (
+        existing_transaction = c.fetchone()
+
+        if existing_transaction:
+            print(f"Transaction with ID {transaction_id} already exists in the database")
+        else:
+            description = transaction.get("remittanceInformationUnstructured",
+                                          transaction.get("remittanceInformationUnstructuredArray"))
+            description = description.replace("; ", "")
+            description = re.sub(r'\s+', ' ', description)  # replace multiple whitespaces by a single one
+
+            c.execute('''INSERT INTO transactions 
+                        (transactionId, bankId, bookingDate, valueDate, amount, 
+                        currency, description, creditorName, creditorAccount, debtorName, debtorAccount)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (
                 transaction_id,
                 bank['id'],
                 transaction.get("bookingDate"),
                 transaction.get("valueDate", None),
                 transaction["transactionAmount"]['amount'],
                 transaction['transactionAmount']["currency"],
-                transaction.get("remittanceInformationUnstructured",
-                                transaction.get("remittanceInformationUnstructuredArray")),
-                transaction.get("creditorName", ""),
+                description,
+                transaction.get("creditorName", None),
                 transaction.get("creditorAccount", {}).get("iban", None),
+                transaction.get("debtorName", None),
                 transaction.get("debtorAccount", {}).get("iban", None)
             ))
-        else:
-            print(f"Transaction with ID {transaction_id} already exists in the database")
+
     conn.commit()
     conn.close()
     print(f"Transactions saved to database")
