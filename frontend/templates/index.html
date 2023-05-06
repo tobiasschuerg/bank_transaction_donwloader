@@ -1,64 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Transactions</title>
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
     />
     <!-- Bootstrap Icons -->
     <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
     />
-  </head>
-  <body class="container-fluid">
-    <h1 class="my-4">Transactions {{ count }}</h1>
-    <!-- Add an id attribute to the form -->
-    <form id="bank-filter-form" method="GET" action="/">
-      <div class="mb-3">
-        <label for="bankName" class="form-label">Filter by bank</label>
-        <select class="form-select" name="bankName" id="bankName">
-          <option value="">All banks</option>
-          {% for bank in banks %} {% if selected_bank == bank[0] %}
-          <option value="{{ bank[0] }}" selected>{{ bank[0] }}</option>
-          {% else %}
-          <option value="{{ bank[0] }}">{{ bank[0] }}</option>
-          {% endif %} {% endfor %}
-        </select>
-      </div>
-    </form>
 
-    <!-- Add checkboxes for toggling Creditor Account and Debtor Account columns -->
-    <div class="form-check form-switch my-3">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        id="toggleCreditorAccount"
-      />
-      <label class="form-check-label" for="toggleCreditorAccount"
-        >Show Creditor Account</label
-      >
-    </div>
-    <div class="form-check form-switch my-3">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        id="toggleDebtorAccount"
-      />
-      <label class="form-check-label" for="toggleDebtorAccount"
-        >Show Debtor Account</label
-      >
+</head>
+<body class="container-fluid">
+<h1 class="my-4">Transactions {{ count }}</h1>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-4">
+            <form id="bank-filter-form" method="GET" action="/">
+                <div class="mb-3">
+                    <label for="bankName" class="form-label">Filter by bank</label>
+                    <select class="form-select" name="bankName" id="bankName">
+                        <option value="">All banks</option>
+                        {% for bank in banks %} {% if selected_bank == bank[0] %}
+                        <option value="{{ bank[0] }}" selected>{{ bank[0] }}</option>
+                        {% else %}
+                        <option value="{{ bank[0] }}">{{ bank[0] }}</option>
+                        {% endif %} {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="col-4">
+
+            <form id="filter-form" method="GET" action="/">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">From</span>
+                    <input type="date" class="form-control" name="start_date" id="start_date" value="{{ start_date }}"
+                           onchange="submitForm()"/>
+                    <span class="input-group-text">To</span>
+                    <input type="date" class="form-control" name="end_date" id="end_date" value="{{ end_date }}"
+                           onchange="submitForm()"/>
+                </div>
+                <div class="d-flex">
+                    <button type="button" class="btn btn-secondary" onclick="resetDates()">Reset</button>
+                </div>
+
+            </form>
+
+        </div>
+        <div class="col-4">
+
+            <div class="form-check form-switch my-3">
+                <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="toggleCreditorAccount"
+                />
+                <label class="form-check-label" for="toggleCreditorAccount"
+                >Show Creditor Account</label
+                >
+            </div>
+            <div class="form-check form-switch my-3">
+                <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="toggleDebtorAccount"
+                />
+                <label class="form-check-label" for="toggleDebtorAccount"
+                >Show Debtor Account</label
+                >
+            </div>
+        </div>
     </div>
 
-    <!-- Update the table headers and rows -->
-    <div class="table-responsive">
-      <table class="table table-striped my-4">
+</div>
+
+
+<!-- Update the table headers and rows -->
+<div class="table-responsive">
+    <table class="table table-striped my-4">
         <thead>
-          <tr>
+        <tr>
             <th scope="col">Transaction #</th>
             <th scope="col">Bank Name</th>
             <th scope="col">Booking Date</th>
@@ -70,76 +99,80 @@
             <th scope="col" class="debtor-account">Debtor Name</th>
             <th scope="col" class="debtor-account">Debtor Account</th>
             <th scope="col">Category</th>
-          </tr>
+        </tr>
         </thead>
 
         <tbody>
-          {% for transaction in transactions %}
-          <tr
-            class="{% if transaction['amount'] > 0 %}table-success{% elif transaction['amount'] < -100 %}table-danger{% endif %}"
-          >
+        {% for transaction in transactions %}
+        <tr
+                class="{% if transaction['amount'] > 0 %}table-success{% elif transaction['amount'] < -100 %}table-danger{% endif %}"
+        >
             <td>{{ transaction['transactionId'] }}</td>
             <td
-              data-bs-toggle="tooltip"
-              data-bs-placement="top"
-              title="IBAN: {{ transaction['iban'] }}"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="IBAN: {{ transaction['iban'] }}"
             >
-              {{ transaction['bankName'] }}
+                {{ transaction['bankName'] }}
             </td>
             <td class="text-nowrap">{{ transaction['bookingDate'] }}</td>
             <td class="text-nowrap">{{ transaction['valueDate'] }}</td>
             <td
-              class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
+                    class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
             >
-              {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
+                {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
             </td>
-            <td style="max-width: 400px">{{ transaction['description'] }}</td>
+<td style="max-width: 400px">
+    <div class="description editable" onclick="editDescription(this, '{{ transaction['transactionId'] }}')">
+        {{ transaction['description'] }}
+    </div>
+</td>
             <td class="creditor-account">
-              {{ transaction['creditorName'] if transaction['creditorName'] is
-              not none else '' }}
+                {{ transaction['creditorName'] if transaction['creditorName'] is
+                not none else '' }}
             </td>
             <td class="creditor-account">
-              {{ transaction['creditorAccount'] if
-              transaction['creditorAccount'] is not none else '' }}
+                {{ transaction['creditorAccount'] if
+                transaction['creditorAccount'] is not none else '' }}
             </td>
             <td class="debtor-account">
-              {{ transaction['debtorName'] if transaction['debtorName'] is not
-              none else '' }}
+                {{ transaction['debtorName'] if transaction['debtorName'] is not
+                none else '' }}
             </td>
             <td class="debtor-account">
-              {{ transaction['debtorAccount'] if transaction['debtorAccount'] is
-              not none else '' }}
+                {{ transaction['debtorAccount'] if transaction['debtorAccount'] is
+                not none else '' }}
             </td>
             <td class="text-nowrap">
-              {% if transaction['category'] %} {{ transaction['category'] }} {%
-              else %}
-              <div class="d-flex">
-                <select
-                  class="form-select form-select-sm category-select"
-                  data-description="{{ transaction['description'] }}"
-                  data-creditor="{{ transaction['creditorName'] if transaction['creditorName'] is not none else '' }}"
-                  data-debtor="{{ transaction['debtorName'] if transaction['debtorName'] is not none else '' }}"
-                >
-                  <option value="">Select category</option>
-                </select>
+                {% if transaction['category'] %} {{ transaction['category'] }} {%
+                else %}
+                <div class="d-flex">
+                    <select
+                            class="form-select form-select-sm category-select"
+                            data-description="{{ transaction['description'] }}"
+                            data-creditor="{{ transaction['creditorName'] if transaction['creditorName'] is not none else '' }}"
+                            data-debtor="{{ transaction['debtorName'] if transaction['debtorName'] is not none else '' }}"
+                    >
+                        <option value="">Select category</option>
+                    </select>
 
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary ms-1"
-                  onclick="saveCategory('{{ transaction[0] }}', this.previousElementSibling.selectedOptions[0].value)"
-                >
-                  <i class="bi bi-check"></i>
-                </button>
-              </div>
-              {% endif %}
+                    <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary ms-1"
+                            onclick="saveCategory('{{ transaction[0] }}', this.previousElementSibling.selectedOptions[0].value)"
+                    >
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
+                {% endif %}
             </td>
-          </tr>
-          {% endfor %}
+        </tr>
+        {% endfor %}
         </tbody>
-      </table>
-    </div>
+    </table>
+</div>
 
-    <style>
+<style>
       .category-select {
         min-width: 200px;
         text-overflow: ellipsis;
@@ -149,12 +182,17 @@
         border: 2px solid #007bff;
         box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
       }
-    </style>
 
-    <!-- Add Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-    <!-- Include the separate script.js file -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-  </body>
+    .editable:hover:not(:has(input)) {
+        cursor: pointer;
+        text-decoration: underline;
+    }
+</style>
+
+<!-- Add Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+<!-- Include the separate script.js file -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
 </html>

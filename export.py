@@ -3,11 +3,11 @@ import os
 from datetime import date, timedelta
 
 import database
-from database import get_categories, get_transactions_from_db
+from database import get_categories, get_transactions
 
 
-def export_transactions(output_dir, date=None):
-    transactions = database.get_transactions_from_db(None)
+def export_transactions(output_dir, start_date=None):
+    transactions = database.get_transactions(start_date=start_date)
 
     # Group transactions by bank name
     transactions_by_bank = {}
@@ -34,7 +34,7 @@ def export_transactions(output_dir, date=None):
 
 def export_creditor_category(path):
     categories = get_categories()
-    transactions = get_transactions_from_db()
+    transactions = get_transactions()
 
     output_file = os.path.join(path, "classifier_data.py")
 
@@ -47,9 +47,12 @@ def export_creditor_category(path):
             category_name = transaction['category']
             if not category_name:
                 continue
+            debtor_name = transaction['debtorName'] if transaction['debtorName'] else ''
+            creditor_name = transaction['creditorName'] if transaction['creditorName'] else ''
             classifier_file.write(
-                f"    ('{category_name}', '{transaction['debtorName']} {transaction['creditorName']} {transaction['description']}'),\n")
+                f"    ('{category_name}', '{debtor_name} {creditor_name} {transaction['description']}'),\n")
         classifier_file.write("]\n")
+
 
 
 if __name__ == "__main__":

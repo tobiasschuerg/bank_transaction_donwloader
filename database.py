@@ -43,33 +43,48 @@ def connect_to_db(db_folder="data", db_filename="transactions.db"):
     return conn
 
 
-def get_transactions_from_db(selected_bank=None, without_category=False):
+def get_transactions(bank_name=None, start_date=None, end_date=None, without_category=False):
     conn = connect_to_db()
     c = conn.cursor()
 
     query = '''
-            SELECT t.*, b.bankName, b.iban , c.name as category
-            FROM transactions t
-            JOIN banks b ON t.bankId = b.id
-            LEFT JOIN categories c ON t.categoryId = c.id
-    '''
+             SELECT t.*, b.bankName, b.iban , c.name as category
+             FROM transactions t
+             JOIN banks b ON t.bankId = b.id
+             LEFT JOIN categories c ON t.categoryId = c.id
+     '''
 
-    if selected_bank:
-        query += f'WHERE b.bankName = "{selected_bank}"'
+    # Add filtering conditions
+    conditions = []
+    params = []
+
+    if bank_name:
+        conditions.append("bankName = ?")
+        params.append(bank_name)
+
+    if start_date:
+        conditions.append("bookingDate >= ?")
+        params.append(start_date)
+
+    if end_date:
+        conditions.append("bookingDate <= ?")
+        params.append(end_date)
 
     if without_category:
-        if selected_bank:
-            query += " AND "
-        else:
-            query += " WHERE "
-        query += f'category IS NULL'
+        conditions.append("category IS NULL")
 
-    query += ' ORDER BY t.bookingDate DESC'
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY bookingDate DESC"
+
     print(query)
-    c.execute(query)
+    print(conditions)
 
+    c.execute(query, params)
     transactions = c.fetchall()
     conn.close()
+
     return transactions
 
 
@@ -142,3 +157,20 @@ def transaction_set_category(transaction_id, category_id):
 
     conn.commit()
     conn.close()
+
+
+def update_description(transaction_id, new_description):
+    conn = connect_to_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        '''
+        UPDATE transactions
+        SET description = ?
+        WHERE transactionId = ?
+        ''',
+        (new_description, transaction_id)
+    )
+
+    conn.commit()
+    cursor.close()
