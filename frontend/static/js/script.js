@@ -136,7 +136,7 @@ async function getCategorySuggestion(transactionDescription) {
   const formData = new FormData();
   formData.append("transaction", transactionDescription);
 
-  const response = await fetch("http://127.0.0.1:5001/api/suggest_category", {
+  const response = await fetch("/api/suggest_category", {
     method: "POST",
     body: formData,
   });

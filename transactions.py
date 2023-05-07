@@ -20,10 +20,7 @@ def store_transactions(transactions, bank_name, iban):
         if existing_transaction:
             print(f"Transaction with ID {transaction_id} already exists in the database")
         else:
-            description = transaction.get("remittanceInformationUnstructured",
-                                          transaction.get("remittanceInformationUnstructuredArray"))
-            description = description.replace("; ", "")
-            description = re.sub(r'\s+', ' ', description)  # replace multiple whitespaces by a single one
+            description = extract_description(transaction)
 
             c.execute('''INSERT INTO transactions 
                         (transactionId, bankId, bookingDate, valueDate, amount, 
@@ -46,3 +43,16 @@ def store_transactions(transactions, bank_name, iban):
     conn.commit()
     conn.close()
     print(f"Transactions saved to database")
+
+
+def extract_description(transaction):
+    description = transaction.get("remittanceInformationUnstructured")
+
+    if description is not None:
+        description = description.replace("; ", "")  # comdirect seems to replace line wraps
+    else:
+        description_array = transaction.get("remittanceInformationUnstructuredArray")
+        description = ' '.join(description_array) if description_array else ""
+
+    description = re.sub(r'\s+', ' ', description)  # replace multiple whitespaces by a single one
+    return description

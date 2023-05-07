@@ -154,9 +154,18 @@ def transaction_set_category(transaction_id, category_id):
 
     # Update the transaction with the category name
     c.execute('UPDATE transactions SET categoryId = ? WHERE transactionId = ?', (category['id'], transaction_id))
-
     conn.commit()
+
+    c.execute('''
+            SELECT t.*, b.bankName, b.iban , c.name as category
+            FROM transactions t
+            JOIN banks b ON t.bankId = b.id
+            LEFT JOIN categories c ON t.categoryId = c.id
+            WHERE transactionId = ?
+    ''', (transaction_id,))
+    transaction = c.fetchone()
     conn.close()
+    return transaction
 
 
 def update_description(transaction_id, new_description):

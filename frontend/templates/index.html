@@ -40,6 +40,7 @@
         <div class="col-4">
 
             <form id="filter-form" method="GET" action="/">
+                <label class="form-label">Filter by date</label>
                 <div class="input-group mb-3">
                     <span class="input-group-text">From</span>
                     <input type="date" class="form-control" name="start_date" id="start_date" value="{{ start_date }}"
@@ -56,8 +57,8 @@
 
         </div>
         <div class="col-4">
-
-            <div class="form-check form-switch my-3">
+            <label class="form-label">Configure table</label>
+            <div class="form-check form-switch">
                 <input
                         class="form-check-input"
                         type="checkbox"

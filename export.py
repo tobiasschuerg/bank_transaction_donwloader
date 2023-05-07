@@ -39,7 +39,7 @@ def export_creditor_category(path):
     output_file = os.path.join(path, "classifier_data.py")
 
     with open(output_file, "w", encoding="utf-8") as classifier_file:
-        classifier_file.write("data = [\n")
+        classifier_file.write("training_data = [\n")
         for category in categories:
             classifier_file.write(f"    ('{category['category']}', '{category['category']}'),\n")
 
@@ -52,7 +52,6 @@ def export_creditor_category(path):
             classifier_file.write(
                 f"    ('{category_name}', '{debtor_name} {creditor_name} {transaction['description']}'),\n")
         classifier_file.write("]\n")
-
 
 
 if __name__ == "__main__":

@@ -1,13 +1,12 @@
-from datetime import datetime
-
 import database
+from classifier.app import update_classifier
 from database import get_banks_from_db
-from flask import Flask, render_template, request, jsonify
+from flask import render_template, request, Blueprint, jsonify
 
-app = Flask(__name__)
+data_blueprint = Blueprint('data', __name__)
 
 
-@app.route("/", methods=["GET"])
+@data_blueprint.route("/", methods=["GET"])
 def index():
     bank_name = request.args.get("bankName")
     filter_no_category = request.args.get('category_missing')
@@ -29,22 +28,24 @@ def index():
     )
 
 
-@app.route('/categories', methods=['GET'])
+@data_blueprint.route('/categories', methods=['GET'])
 def get_categories():
     categories = database.get_categories()
     return jsonify(categories)
 
 
-@app.route('/transaction/<transaction_id>/category', methods=['PUT'])
+@data_blueprint.route('/transaction/<transaction_id>/category', methods=['PUT'])
 def update_transaction_category(transaction_id):
     data = request.get_json()
     category_id = data['category_id']
 
-    database.transaction_set_category(transaction_id, category_id)
+    transaction = database.transaction_set_category(transaction_id, category_id)
+
+    update_classifier(transaction)
     return '', 204
 
 
-@app.route('/transaction/<transaction_id>/description', methods=['PUT'])
+@data_blueprint.route('/transaction/<transaction_id>/description', methods=['PUT'])
 def update_transaction_description(transaction_id):
     data = request.get_json()
     new_description = data['description']
