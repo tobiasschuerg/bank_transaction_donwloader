@@ -1,4 +1,5 @@
 import os
+import time
 
 import yaml
 from nordigen import NordigenClient
@@ -26,6 +27,20 @@ def get_refresh_token():
     return load_credentials()["refresh_token"]
 
 
+def is_new_token_needed(credentials):
+    if "access_token" not in credentials or "token_expiry" not in credentials:
+        # there is no valid token at all
+        return True
+
+    current_time = time.time()
+    # If the token will expire in less than 5 minutes (300 seconds), return True
+    if current_time >= credentials["token_expiry"] - 300:
+        return True
+    else:
+        # Token has not expired and should be valid
+        return False
+
+
 def create_nordigen_client():
     # Load credentials from file or prompt user
     credentials = load_credentials()
@@ -37,17 +52,16 @@ def create_nordigen_client():
     )
 
     # Check if access_token is not set and generate it
-    if "access_token" not in credentials:
+    if is_new_token_needed(credentials):
         print("Generating access token...")
         token_data = nordigen_client.generate_token()
         credentials["access_token"] = token_data["access"]
         credentials["refresh_token"] = token_data["refresh"]
-        # TODO: store expiry
+        credentials["token_expiry"] = time.time() + token_data["access_expires"]
         with open("credentials.yaml", "w") as f:
             yaml.dump(credentials, f)
         print("New access token generated.")
     else:
-        # TODO: check if token is expired and refresh
         print("Using existing access token.")
         nordigen_client.token = credentials["access_token"]
 
@@ -59,7 +73,7 @@ def create_nordigen_client():
             print("Access token expired. Refreshing token...")
             new_token = nordigen_client.exchange_token(get_refresh_token())
             credentials["access_token"] = new_token["access"]
-            credentials["token_expiry"] = new_token["access_expires"]
+            credentials["token_expiry"] = time.time() + new_token["access_expires"]
             save(credentials)
             institutions = nordigen_client.institution.get_institutions("DE")
             print("supported banks (DE):")
