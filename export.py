@@ -22,13 +22,10 @@ def export_transactions(output_dir, start_date=None):
         csv_filename = f"{bank_iban}_{bank_name}.csv"
         csv_filepath = os.path.join(output_dir, csv_filename)
         with open(csv_filepath, "w", newline="", encoding="utf-8") as csvfile:
-            fieldnames = ["transactionId", "bookingDate", "valueDate", "amount", "currency", "description",
-                          "creditorName",
-                          "creditorAccount", "debtorAccount"]
             writer = csv.writer(csvfile)
-            writer.writerow(fieldnames)
+            writer.writerow(transaction.keys())
             for transaction in transactions:
-                writer.writerow((transaction[0],) + transaction[2:9])
+                writer.writerow(transaction)
     print(f"Transactions exported to {output_dir}")
 
 
@@ -56,11 +53,12 @@ def export_creditor_category(path):
 
 if __name__ == "__main__":
     output_directory = "data"
+    days_to_export = 35
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    export_start_date = date.today() - timedelta(days=30)
+    export_start_date = date.today() - timedelta(days=days_to_export)
     export_transactions(output_directory, export_start_date)
 
     export_creditor_category(output_directory)

@@ -151,67 +151,72 @@ async function getCategorySuggestion(transactionDescription) {
 }
 
 function submitForm() {
-    document.getElementById('filter-form').submit();
+  document.getElementById("filter-form").submit();
 }
 
 function resetDates() {
-    document.getElementById('start_date').value = '';
-    document.getElementById('end_date').value = '';
-    submitForm();
+  document.getElementById("start_date").value = "";
+  document.getElementById("end_date").value = "";
+  submitForm();
 }
 
-    function editDescription(element, transactionId) {
-    // Check if the input element is already present
-    if (element.querySelector('input')) {
-      return;
-    }
+function editDescription(element, transactionId) {
+  // Check if the input element is already present
+  if (element.querySelector("input")) {
+    return;
+  }
 
-    const currentValue = element.textContent.trim();
-    element.innerHTML = `
+  const currentValue = element.textContent.trim();
+  element.innerHTML = `
       <input type="text" class="form-control" value="${currentValue}" onfocusout="submitDescription(this, '${transactionId}', false, '${currentValue}')" />
     `;
 
-    const inputElement = element.querySelector('input');
-    inputElement.focus();
+  const inputElement = element.querySelector("input");
+  inputElement.focus();
 
-    // Add event listeners for the Escape and Enter keys
-    inputElement.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        // Cancel editing and restore the original description
-        element.textContent = currentValue;
-      } else if (event.key === 'Enter') {
-        event.preventDefault(); // Prevent form submission on pressing Enter
-        submitDescription(inputElement, transactionId, true, currentValue);
-      }
-    });
-  }
-
-  function submitDescription(element, transactionId, forceSubmit, originalDescription) {
-    const newDescription = element.value.trim();
-
-    // Don't save if the input is blank and forceSubmit is false
-    if (!newDescription && !forceSubmit) {
-      element.parentElement.textContent = originalDescription;
-      return;
+  // Add event listeners for the Escape and Enter keys
+  inputElement.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      // Cancel editing and restore the original description
+      element.textContent = currentValue;
+    } else if (event.key === "Enter") {
+      event.preventDefault(); // Prevent form submission on pressing Enter
+      submitDescription(inputElement, transactionId, true, currentValue);
     }
+  });
+}
 
-    // Make an AJAX request to the update transaction description route
-    fetch(`/transaction/${transactionId}/description`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ description: newDescription }),
-    })
-      .then((response) => {
-        if (response.status === 204) {
-          // Update the description cell content
-          element.parentElement.textContent = newDescription;
-        } else {
-          console.error('Failed to update the description');
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+function submitDescription(
+  element,
+  transactionId,
+  forceSubmit,
+  originalDescription
+) {
+  const newDescription = element.value.trim();
+
+  // Don't save if the input is blank and forceSubmit is false
+  if (!newDescription && !forceSubmit) {
+    element.parentElement.textContent = originalDescription;
+    return;
   }
+
+  // Make an AJAX request to the update transaction description route
+  fetch(`/transaction/${transactionId}/description`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ description: newDescription }),
+  })
+    .then((response) => {
+      if (response.status === 204) {
+        // Update the description cell content
+        element.parentElement.textContent = newDescription;
+      } else {
+        console.error("Failed to update the description");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
