@@ -12,6 +12,7 @@ def store_transactions(transactions, bank_name, iban):
     bank = get_or_create_bank(bank_name, iban)
 
     # Insert new transactions into the database
+    insert_count = 0
     for transaction in transactions:
         transaction_id = transaction.get("transactionId", transaction.get("internalTransactionId"))
         c.execute('''SELECT transactionId FROM transactions WHERE transactionId = ?''', (transaction_id,))
@@ -39,10 +40,12 @@ def store_transactions(transactions, bank_name, iban):
                 transaction.get("debtorName", None),
                 transaction.get("debtorAccount", {}).get("iban", None)
             ))
+            insert_count += 1
 
     conn.commit()
     conn.close()
-    print(f"Transactions saved to database")
+    print("done")
+    print(f"{insert_count} transactions saved to database")
 
 
 def extract_description(transaction):

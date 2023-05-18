@@ -95,10 +95,8 @@
             <th scope="col">Value Date</th>
             <th scope="col">Amount</th>
             <th scope="col">Description</th>
-            <th scope="col" class="creditor-account">Creditor Name</th>
-            <th scope="col" class="creditor-account">Creditor Account</th>
-            <th scope="col" class="debtor-account">Debtor Name</th>
-            <th scope="col" class="debtor-account">Debtor Account</th>
+            <th scope="col" class="creditor-account">Creditor</th>
+            <th scope="col" class="debtor-account">Debtor</th>
             <th scope="col">Category</th>
         </tr>
         </thead>
@@ -123,24 +121,22 @@
             >
                 {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
             </td>
-<td style="max-width: 400px">
-    <div class="description editable" onclick="editDescription(this, '{{ transaction['transactionId'] }}')">
-        {{ transaction['description'] }}
-    </div>
-</td>
+            <td style="max-width: 400px">
+                <div class="description editable" onclick="editDescription(this, '{{ transaction['transactionId'] }}')">
+                    {{ transaction['description'] }}
+                </div>
+            </td>
             <td class="creditor-account">
                 {{ transaction['creditorName'] if transaction['creditorName'] is
                 not none else '' }}
-            </td>
-            <td class="creditor-account">
+                <br>
                 {{ transaction['creditorAccount'] if
                 transaction['creditorAccount'] is not none else '' }}
             </td>
             <td class="debtor-account">
                 {{ transaction['debtorName'] if transaction['debtorName'] is not
                 none else '' }}
-            </td>
-            <td class="debtor-account">
+                <br>
                 {{ transaction['debtorAccount'] if transaction['debtorAccount'] is
                 not none else '' }}
             </td>
@@ -188,6 +184,7 @@
         cursor: pointer;
         text-decoration: underline;
     }
+
 </style>
 
 <!-- Add Bootstrap JS -->
@@ -195,5 +192,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 <!-- Include the separate script.js file -->
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/controls.js') }}"></script>
 </body>
 </html>
