@@ -40,17 +40,19 @@ def export_creditor_category(path):
     with open(output_file, "w", encoding="utf-8") as classifier_file:
         classifier_file.write("training_data = [\n")
         for category in categories:
-            classifier_file.write(f"    ('{category['category']}', '{category['category']}'),\n")
+            classifier_file.write(f"    ('{repr(category['category'])[1:-1]}', '{repr(category['category'])[1:-1]}'),\n")
 
         for transaction in transactions:
-            category_name = transaction['category']
+            category_name = repr(transaction['category'])[1:-1] if transaction['category'] else ''
             if not category_name:
                 continue
-            debtor_name = transaction['debtorName'] if transaction['debtorName'] else ''
-            creditor_name = transaction['creditorName'] if transaction['creditorName'] else ''
+            debtor_name = repr(transaction['debtorName'])[1:-1] if transaction['debtorName'] else ''
+            creditor_name = repr(transaction['creditorName'])[1:-1] if transaction['creditorName'] else ''
+            description = repr(transaction['description'])[1:-1]
             classifier_file.write(
-                f"    ('{category_name}', '{debtor_name} {creditor_name} {transaction['description']}'),\n")
+                f"    ('{category_name}', '{debtor_name} {creditor_name} {description}'),\n")
         classifier_file.write("]\n")
+
 
 
 def valid_date(s):
