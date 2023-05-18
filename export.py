@@ -1,12 +1,14 @@
+import argparse
 import csv
 import os
-from datetime import date, timedelta
+from datetime import datetime
 
 import database
 from database import get_categories, get_transactions
 
 
 def export_transactions(output_dir, start_date=None):
+    print(f"Exporting transactions starting from {start_date}")
     transactions = database.get_transactions(start_date=start_date)
 
     # Group transactions by bank name
@@ -51,14 +53,31 @@ def export_creditor_category(path):
         classifier_file.write("]\n")
 
 
+def valid_date(s):
+    try:
+        return datetime.strptime(s, "%Y-%m-%d")
+    except ValueError:
+        msg = "Not a valid date: '{0}'.".format(s)
+        raise argparse.ArgumentTypeError(msg)
+
+
 if __name__ == "__main__":
     output_directory = "data"
-    days_to_export = 35
+
+    # Get the first day of the current month
+    now = datetime.now()
+    default_date = datetime(now.year, now.month, 1)
+    # Define the argument parser
+    parser = argparse.ArgumentParser(description='Download bank transactions.')
+    parser.add_argument('--date_from', help='The start date for transactions in YYYY-MM-DD format.',
+                        default=default_date, type=valid_date)
+    # Parse the arguments
+    args = parser.parse_args()
 
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    export_start_date = date.today() - timedelta(days=days_to_export)
+    export_start_date = args.date_from.strftime("%Y-%m-%d")
     export_transactions(output_directory, export_start_date)
 
     export_creditor_category(output_directory)
