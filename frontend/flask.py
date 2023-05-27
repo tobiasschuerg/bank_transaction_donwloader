@@ -45,6 +45,12 @@ def update_transaction_category(transaction_id):
     return '', 204
 
 
+@data_blueprint.route('/transaction/<transaction_id>/category', methods=['DELETE'])
+def remove_transaction_category(transaction_id):
+    database.transaction_remove_category(transaction_id)
+    return '', 204
+
+
 @data_blueprint.route('/transaction/<transaction_id>/description', methods=['PUT'])
 def update_transaction_description(transaction_id):
     data = request.get_json()

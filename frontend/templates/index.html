@@ -154,9 +154,17 @@
               {{ transaction['debtorAccount'] if transaction['debtorAccount'] is
               not none else '' }}
             </td>
-            <td class="text-nowrap">
-              {% if transaction['category'] %} {{ transaction['category'] }} {%
-              else %}
+            <td class="text-nowrap category">
+              {% if transaction['category'] %} {{ transaction['category'] }}
+
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger ms-1 category-remove"
+                onclick="removeCategory('{{ transaction['transactionId'] }}')"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+              {% else %}
               <div class="d-flex">
                 <select
                   class="form-select form-select-sm category-select"
@@ -170,7 +178,7 @@
                 <button
                   type="button"
                   class="btn btn-sm btn-outline-secondary ms-1"
-                  onclick="saveCategory('{{ transaction[0] }}', this.previousElementSibling.selectedOptions[0].value)"
+                  onclick="saveCategory('{{ transaction['transactionId'] }}', this.previousElementSibling.selectedOptions[0].value)"
                 >
                   <i class="bi bi-check"></i>
                 </button>
@@ -184,6 +192,14 @@
     </div>
 
     <style>
+      .category-remove {
+        display: none;
+      }
+
+      .category:hover .category-remove {
+        display: inline;
+      }
+
       .category-select {
         min-width: 200px;
         text-overflow: ellipsis;

@@ -132,6 +132,22 @@ async function saveCategory(transactionId, categoryId) {
   }
 }
 
+function removeCategory(transactionId) {
+  fetch(`/transaction/${transactionId}/category`, {
+    method: "DELETE",
+  })
+    .then((response) => {
+      if (response.ok) {
+        location.reload();
+      } else {
+        console.error("Failed to remove category");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
 async function getCategorySuggestion(transactionDescription) {
   const formData = new FormData();
   formData.append("transaction", transactionDescription);

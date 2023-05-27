@@ -168,6 +168,16 @@ def transaction_set_category(transaction_id, category_id):
     return transaction
 
 
+def transaction_remove_category(transaction_id):
+    conn = connect_to_db()
+    c = conn.cursor()
+
+    # Update the transaction with the category ID set to NULL
+    c.execute('UPDATE transactions SET categoryId = NULL WHERE transactionId = ?', (transaction_id,))
+    conn.commit()
+    conn.close()
+
+
 def update_description(transaction_id, new_description):
     conn = connect_to_db()
     cursor = conn.cursor()

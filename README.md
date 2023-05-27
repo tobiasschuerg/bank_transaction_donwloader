@@ -33,8 +33,9 @@ The Bank Transaction Downloader offers the following capabilities:
 - Customize settings and configurations via yaml files.
 
 ## Notice
-The Bank Transaction Downloader is a tool for personal use and is provided as-is 
-without any warranties or guarantees of any kind. The user is solely responsible for the data they access 
-and how they use it. 
-Please also remember to be careful with your personal data. 
+
+The Bank Transaction Downloader is a tool for personal use and is provided as-is
+without any warranties or guarantees of any kind. The user is solely responsible for the data they access
+and how they use it.
+Please also remember to be careful with your personal data.
 Keep your Nordigen API key confidential, and do not share it with others.
