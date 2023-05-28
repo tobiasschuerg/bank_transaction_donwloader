@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function fetchCategories() {
   const minConfidence = 0.2;
-  const response = await fetch("/categories");
+  const response = await fetch("/api/categories");
   const categories = await response.json();
   const categoryDropdowns = document.querySelectorAll(".category-select");
   categoryDropdowns.forEach(async (dropdown) => {

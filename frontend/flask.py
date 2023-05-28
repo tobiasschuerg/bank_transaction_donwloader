@@ -28,7 +28,18 @@ def index():
     )
 
 
-@data_blueprint.route('/categories', methods=['GET'])
+@data_blueprint.route('/categories')
+def categories():
+    category_sums, category_avg_sums = database.get_category_sums()
+
+    # Get all unique months from the category sums and sort them
+    months = sorted(set(month for sums in category_sums.values() for month in sums))
+
+    return render_template('categories.html', category_sums=category_sums, category_avg_sums=category_avg_sums,
+                           months=months)
+
+
+@data_blueprint.route('/api/categories', methods=['GET'])
 def get_categories():
     categories = database.get_categories()
     return jsonify(categories)

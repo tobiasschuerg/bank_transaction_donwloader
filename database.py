@@ -193,3 +193,45 @@ def update_description(transaction_id, new_description):
 
     conn.commit()
     cursor.close()
+
+
+def get_category_sums():
+    conn = connect_to_db()
+    c = conn.cursor()
+
+    query = '''
+    SELECT categories.name, strftime('%Y-%m', transactions.bookingDate) as month, SUM(transactions.amount) as sum
+    FROM transactions
+    JOIN categories ON transactions.categoryId = categories.id
+    GROUP BY categories.name, month
+    ORDER BY month DESC, categories.name
+    '''
+
+    c.execute(query)
+
+    category_sums = {}
+    category_avg_sums = {}
+    for row in c.fetchall():
+        if row['name'] not in category_sums:
+            category_sums[row['name']] = {}
+        category_sums[row['name']][row['month']] = row['sum']
+
+        if row['name'] not in category_avg_sums:
+            category_avg_sums[row['name']] = {'total': 0, 'count': 0}
+        category_avg_sums[row['name']]['total'] += row['sum']
+        category_avg_sums[row['name']]['count'] += 1
+
+    # Calculate average sum for each category
+    for category in category_avg_sums:
+        category_avg_sums[category] = category_avg_sums[category]['total'] / category_avg_sums[category]['count']
+
+    # Sort categories by name
+    category_sums = dict(sorted(category_sums.items()))
+
+    conn.close()
+
+    return category_sums, category_avg_sums
+
+
+
+
