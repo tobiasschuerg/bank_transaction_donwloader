@@ -1,3 +1,5 @@
+import datetime
+
 import database
 from classifier.app import update_classifier
 from database import get_banks_from_db
@@ -30,13 +32,27 @@ def index():
 
 @data_blueprint.route('/categories')
 def categories():
-    category_sums, category_avg_sums = database.get_category_sums()
+    start_month = request.args.get('start-month')
+    end_month = request.args.get('end-month')
+
+    # Convert to datetime.date objects if not None
+    if start_month:
+        start_month = datetime.datetime.strptime(start_month, "%Y-%m").date().strftime('%Y-%m')
+    else:
+        start_month = None
+    if end_month:
+        end_month = datetime.datetime.strptime(end_month, "%Y-%m").date().strftime('%Y-%m')
+    else:
+        end_month = None
+
+    # Get category sums filtered by the selected months
+    category_sums, category_avg_sums = database.get_category_sums(start_month, end_month)
 
     # Get all unique months from the category sums and sort them
     months = sorted(set(month for sums in category_sums.values() for month in sums))
 
     return render_template('categories.html', category_sums=category_sums, category_avg_sums=category_avg_sums,
-                           months=months)
+                           months=months, start_month=start_month, end_month=end_month)
 
 
 @data_blueprint.route('/api/categories', methods=['GET'])

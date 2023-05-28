@@ -1,3 +1,4 @@
+import datetime
 import os
 import sqlite3
 
@@ -195,7 +196,7 @@ def update_description(transaction_id, new_description):
     cursor.close()
 
 
-def get_category_sums():
+def get_category_sums(start_month: datetime.date = None, end_month: datetime.date = None):
     conn = connect_to_db()
     c = conn.cursor()
 
@@ -203,11 +204,25 @@ def get_category_sums():
     SELECT categories.name, strftime('%Y-%m', transactions.bookingDate) as month, SUM(transactions.amount) as sum
     FROM transactions
     JOIN categories ON transactions.categoryId = categories.id
+    WHERE month >= ? AND month <= ?
     GROUP BY categories.name, month
     ORDER BY month DESC, categories.name
     '''
+    print(f"parameters: {start_month, end_month}")
 
-    c.execute(query)
+    if start_month is None:
+        start_month = '0000-00'  # This represents the earliest possible date
+    else:
+        start_month = start_month
+
+    if end_month is None:
+        end_month = '9999-12'  # This represents the latest possible date
+    else:
+        # Add one month to the end_month
+        end_month = end_month
+
+    print(f"Executing query: {query} with parameters: {start_month, end_month}")
+    c.execute(query, (start_month, end_month))
 
     category_sums = {}
     category_avg_sums = {}
@@ -231,7 +246,3 @@ def get_category_sums():
     conn.close()
 
     return category_sums, category_avg_sums
-
-
-
-
