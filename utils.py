@@ -75,10 +75,14 @@ def select_bank_connection(nordigen_client):
     # Prompt the user for the bank name or select an existing connection
     print("Enter the bank name or choose from the list of existing connections:")
     for idx, connection in enumerate(connections):
-        print(idx, connection.get("bank_name", connection["institution_id"]))
+        print(idx, ": ", connection.get("bank_name", connection["institution_id"]))
+    print("a: All connections")  # Added option for "all" connections
     choice = input("> ")
-    if choice.isdigit() and int(choice) < len(connections):
-        connection_details = connections[int(choice)]
+
+    if choice.lower() == "a":
+        return connections  # Return all connection details as a list
+    elif choice.isdigit() and int(choice) < len(connections):
+        connection_details = [connections[int(choice)]]
         print("Using existing institution ID.")
     else:
         print(f"Getting institution ID for {choice}...")
@@ -89,10 +93,13 @@ def select_bank_connection(nordigen_client):
         institution = nordigen_client.institution.get_institution_by_id(institution_id)
         pprint.pprint(institution)
 
-        connection_details = {
+        connection_details = [{
             "institution_id": institution_id,
             "institution_logo": institution['logo'],
             "institution_total_days": institution['transaction_total_days']
-        }
+        }]
         print(f"Institution ID for {choice}: {institution_id}")
+
     return connection_details
+
+
