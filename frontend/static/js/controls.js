@@ -19,3 +19,19 @@ document.addEventListener("DOMContentLoaded", (event) => {
       localStorage.setItem("debtorAccountChecked", this.checked);
     });
 });
+
+function submitFormWithCategoryMissing() {
+  let checkbox = document.getElementById("toggleNoCategory");
+  let url = new URL(window.location.href);
+
+  // If the checkbox is checked, add 'category_missing=true' to the URL
+  if (checkbox.checked) {
+    url.searchParams.set("category_missing", "true");
+  } else {
+    // If the checkbox is not checked, remove the 'category_missing' parameter from the URL
+    url.searchParams.delete("category_missing");
+  }
+
+  // Reload the page with the new URL
+  window.location.href = url.toString();
+}

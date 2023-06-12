@@ -75,6 +75,16 @@ content %}
           >Show Debtor Account</label
         >
       </div>
+
+      <div class="form-check form-switch my-3">
+        <input class="form-check-input" type="checkbox" id="toggleNoCategory"
+        name="category_missing" onchange="submitFormWithCategoryMissing()"
+               {{ 'checked' if category_missing == 'true' else '' }}
+        />
+        <label class="form-check-label" for="toggleNoCategory">
+          Only transactions without category
+        </label>
+      </div>
     </div>
   </div>
 </div>

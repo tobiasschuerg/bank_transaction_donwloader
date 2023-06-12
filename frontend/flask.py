@@ -26,7 +26,8 @@ def index():
         banks=banks,
         selected_bank=bank_name,
         start_date=start_date,
-        end_date=end_date
+        end_date=end_date,
+        category_missing=filter_no_category
     )
 
 
