@@ -1,3 +1,5 @@
+from requests import HTTPError
+
 import credentials
 import utils
 from transactions import store_transactions
@@ -22,6 +24,12 @@ def process_account(account, bank_name):
     store_transactions(transactions, bank_name, meta_data['iban'])
 
 
+def reset_connection(cd):
+    cd.pop('requisition_id')
+    utils.store_connection(cd)
+    print("connection reset, please try again1")
+
+
 if __name__ == '__main__':
     nordigen_client = credentials.create_nordigen_client()
     bank_connections = utils.select_bank_connection(nordigen_client)
@@ -33,4 +41,18 @@ if __name__ == '__main__':
 
         for account_id in requisition['accounts']:
             account = nordigen_client.account_api(id=account_id)
-            process_account(account, connection_details["bank_name"])
+            try:
+                process_account(account, connection_details["bank_name"])
+            except HTTPError as e:
+                print(e)
+                status_code = e.response.status_code
+                if status_code == 400:
+                    print("Maybe license expired")
+                    reset_connection(connection_details)
+                elif status_code == 401:
+                    print("Please reconnect account")
+                    print("Manually remove the requisition_id from the configuration")
+                    print("... and retry")
+                    reset_connection(connection_details)
+
+                exit(status_code)

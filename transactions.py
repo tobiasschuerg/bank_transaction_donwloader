@@ -13,13 +13,15 @@ def store_transactions(transactions, bank_name, iban):
 
     # Insert new transactions into the database
     insert_count = 0
+    exist_count = 0
     for transaction in transactions:
         transaction_id = transaction.get("transactionId", transaction.get("internalTransactionId"))
         c.execute('''SELECT transactionId FROM transactions WHERE transactionId = ?''', (transaction_id,))
         existing_transaction = c.fetchone()
 
         if existing_transaction:
-            print(f"Transaction with ID {transaction_id} already exists in the database")
+            # print(f"Transaction with ID {transaction_id} already exists in the database")
+            exist_count += 1
         else:
             description = extract_description(transaction)
 
@@ -44,8 +46,9 @@ def store_transactions(transactions, bank_name, iban):
 
     conn.commit()
     conn.close()
-    print("done")
     print(f"{insert_count} transactions saved to database")
+    print(f"{exist_count} transactions were already present")
+    print("----- done -----")
 
 
 def extract_description(transaction):
