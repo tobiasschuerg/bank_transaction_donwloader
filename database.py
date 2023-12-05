@@ -44,7 +44,7 @@ def connect_to_db(db_folder="data", db_filename="transactions.db"):
     return conn
 
 
-def get_transactions(bank_name=None, start_date=None, end_date=None, without_category=False):
+def get_transactions(bank_name=None, start_date=None, end_date=None, category=None):
     conn = connect_to_db()
     c = conn.cursor()
 
@@ -71,8 +71,8 @@ def get_transactions(bank_name=None, start_date=None, end_date=None, without_cat
         conditions.append("bookingDate <= ?")
         params.append(end_date)
 
-    if without_category:
-        conditions.append("category IS NULL")
+    if category is not None:
+        conditions.append(f"categoryId IS {category}")
 
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
@@ -201,7 +201,7 @@ def get_category_sums(start_month: datetime.date = None, end_month: datetime.dat
     c = conn.cursor()
 
     query = '''
-    SELECT categories.name, strftime('%Y-%m', transactions.bookingDate) as month, SUM(transactions.amount) as sum
+    SELECT categories.id, categories.name, strftime('%Y-%m', transactions.bookingDate) as month, SUM(transactions.amount) as sum
     FROM transactions
     JOIN categories ON transactions.categoryId = categories.id
     WHERE month >= ? AND month <= ?
@@ -224,9 +224,11 @@ def get_category_sums(start_month: datetime.date = None, end_month: datetime.dat
     print(f"Executing query: {query} with parameters: {start_month, end_month}")
     c.execute(query, (start_month, end_month))
 
+    categories = {}
     category_sums = {}
     category_avg_sums = {}
     for row in c.fetchall():
+        categories[row['name']] = row['id']
         if row['name'] not in category_sums:
             category_sums[row['name']] = {}
         category_sums[row['name']][row['month']] = row['sum']
@@ -245,4 +247,4 @@ def get_category_sums(start_month: datetime.date = None, end_month: datetime.dat
 
     conn.close()
 
-    return category_sums, category_avg_sums
+    return categories, category_sums, category_avg_sums

@@ -3,7 +3,7 @@ from flask import Flask
 from classifier.app import classifier_blueprint
 from data.classifier_data import training_data
 from database import insert_categories
-from frontend.flask import data_blueprint
+from frontend.flask_app import data_blueprint
 
 if __name__ == '__main__':
     insert_categories(training_data)

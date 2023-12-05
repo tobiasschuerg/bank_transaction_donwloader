@@ -73,7 +73,7 @@ custom_css %}
         <tbody>
           {% for category, sums in category_sums.items() %}
           <tr>
-            <td>{{ category }}</td>
+            <td><a href="/?category={{ categories.get(category) }}">{{category}}</a></td>
             {% for month in months %}
             <td
               class="{{ 'text-success' if sums.get(month, 0) > 0 else 'text-danger' if sums.get(month, 0) < 0 else 'text-muted' }}"

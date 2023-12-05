@@ -26,10 +26,10 @@ function submitFormWithCategoryMissing() {
 
   // If the checkbox is checked, add 'category_missing=true' to the URL
   if (checkbox.checked) {
-    url.searchParams.set("category_missing", "true");
+    url.searchParams.set("category", "null");
   } else {
     // If the checkbox is not checked, remove the 'category_missing' parameter from the URL
-    url.searchParams.delete("category_missing");
+    url.searchParams.delete("category");
   }
 
   // Reload the page with the new URL

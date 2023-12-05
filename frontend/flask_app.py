@@ -1,9 +1,11 @@
 import datetime
 
+from flask import render_template, request, Blueprint, jsonify
+
 import database
 from classifier.app import update_classifier
 from database import get_banks_from_db
-from flask import render_template, request, Blueprint, jsonify
+from date_util import calculate_past_date_string
 
 data_blueprint = Blueprint('data', __name__)
 
@@ -11,12 +13,15 @@ data_blueprint = Blueprint('data', __name__)
 @data_blueprint.route("/", methods=["GET"])
 def index():
     bank_name = request.args.get("bankName")
-    filter_no_category = request.args.get('category_missing')
+    category = request.args.get('category', None)
 
     start_date = request.args.get("start_date")
-    end_date = request.args.get("end_date")
+    if not start_date:
+        start_date = calculate_past_date_string(1) + "-01"
 
-    transactions = database.get_transactions(bank_name, start_date, end_date, filter_no_category)
+    end_date = request.args.get("end_date", "")
+
+    transactions = database.get_transactions(bank_name, start_date, end_date, category)
     banks = get_banks_from_db()
 
     return render_template(
@@ -27,7 +32,7 @@ def index():
         selected_bank=bank_name,
         start_date=start_date,
         end_date=end_date,
-        category_missing=filter_no_category
+        category=category
     )
 
 
@@ -47,12 +52,13 @@ def categories():
         end_month = None
 
     # Get category sums filtered by the selected months
-    category_sums, category_avg_sums = database.get_category_sums(start_month, end_month)
+    categories, category_sums, category_avg_sums = database.get_category_sums(start_month, end_month)
 
     # Get all unique months from the category sums and sort them
     months = sorted(set(month for sums in category_sums.values() for month in sums))
 
-    return render_template('categories.html', category_sums=category_sums, category_avg_sums=category_avg_sums,
+    return render_template('categories.html', categories=categories, category_sums=category_sums,
+                           category_avg_sums=category_avg_sums,
                            months=months, start_month=start_month, end_month=end_month)
 
 
