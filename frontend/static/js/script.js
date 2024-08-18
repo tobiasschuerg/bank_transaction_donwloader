@@ -170,6 +170,12 @@ function submitForm() {
   document.getElementById("filter-form").submit();
 }
 
+function submitBankFilterForm() {
+  document.getElementById("bank-filter-start-date").value = document.getElementById("start_date").value;
+  document.getElementById("bank-filter-end-date").value = document.getElementById("end_date").value;
+  document.getElementById("bank-filter-form").submit();
+}
+
 function resetDates() {
   document.getElementById("start_date").value = "";
   document.getElementById("end_date").value = "";

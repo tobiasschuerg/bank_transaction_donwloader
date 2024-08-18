@@ -33,12 +33,15 @@ def reset_connection(cd):
 if __name__ == '__main__':
     nordigen_client = credentials.create_nordigen_client()
     bank_connections = utils.select_bank_connection(nordigen_client)
+    print(f"Selected {len(bank_connections)} bank connections.")
     for connection_details in bank_connections:
         requisition_id = utils.get_requisition_id(nordigen_client, connection_details)
 
         # Fetch the account list
         requisition = nordigen_client.requisition.get_requisition_by_id(requisition_id=requisition_id)
-
+        if len(requisition['accounts']) == 0:
+            print("No accounts found")
+            reset_connection(connection_details)
         for account_id in requisition['accounts']:
             account = nordigen_client.account_api(id=account_id)
             try:

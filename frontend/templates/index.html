@@ -3,211 +3,213 @@ content %}
 <h1 class="my-4">Transactions {{ count }}</h1>
 
 <div class="container">
-  <div class="row">
-    <div class="col-4">
-      <form id="bank-filter-form" method="GET" action="/">
-        <div class="mb-3">
-          <label for="bankName" class="form-label">Filter by bank</label>
-          <select class="form-select" name="bankName" id="bankName">
-            <option value="">All banks</option>
-            {% for bank in banks %} {% if selected_bank == bank[0] %}
-            <option value="{{ bank[0] }}" selected>{{ bank[0] }}</option>
-            {% else %}
-            <option value="{{ bank[0] }}">{{ bank[0] }}</option>
-            {% endif %} {% endfor %}
-          </select>
+    <div class="row">
+        <div class="col-4">
+            <form id="bank-filter-form" method="GET" action="/">
+                <div class="mb-3">
+                    <label for="bankName" class="form-label">Filter by bank</label>
+                    <select class="form-select" name="bankName" id="bankName" onchange="submitBankFilterForm()">
+                        <option value="">All banks</option>
+                        {% for bank in banks %} {% if selected_bank == bank[0] %}
+                        <option value="{{ bank[0] }}" selected>{{ bank[0] }}</option>
+                        {% else %}
+                        <option value="{{ bank[0] }}">{{ bank[0] }}</option>
+                        {% endif %} {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="start_date" id="bank-filter-start-date" value="{{ start_date }}">
+                <input type="hidden" name="end_date" id="bank-filter-end-date" value="{{ end_date }}">
+            </form>
         </div>
-      </form>
-    </div>
-    <div class="col-4">
-      <form id="filter-form" method="GET" action="/">
-        <label class="form-label">Filter by date</label>
-        <div class="input-group mb-3">
-          <span class="input-group-text">From</span>
-          <input
-            type="date"
-            class="form-control"
-            name="start_date"
-            id="start_date"
-            value="{{ start_date }}"
-            onchange="submitForm()"
-          />
-          <span class="input-group-text">To</span>
-          <input
-            type="date"
-            class="form-control"
-            name="end_date"
-            id="end_date"
-            value="{{ end_date }}"
-            onchange="submitForm()"
-          />
+        <div class="col-4">
+            <form id="filter-form" method="GET" action="/">
+                <label class="form-label">Filter by date</label>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">From</span>
+                    <input
+                            type="date"
+                            class="form-control"
+                            name="start_date"
+                            id="start_date"
+                            value="{{ start_date }}"
+                            onchange="submitForm()"
+                    />
+                    <span class="input-group-text">To</span>
+                    <input
+                            type="date"
+                            class="form-control"
+                            name="end_date"
+                            id="end_date"
+                            value="{{ end_date }}"
+                            onchange="submitForm()"
+                    />
+                </div>
+                <div class="d-flex">
+                    <button
+                            type="button"
+                            class="btn btn-secondary"
+                            onclick="resetDates()"
+                    >
+                        Reset
+                    </button>
+                </div>
+            </form>
         </div>
-        <div class="d-flex">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            onclick="resetDates()"
-          >
-            Reset
-          </button>
-        </div>
-      </form>
-    </div>
-    <div class="col-4">
-      <label class="form-label">Configure table</label>
-      <div class="form-check form-switch">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="toggleCreditorAccount"
-        />
-        <label class="form-check-label" for="toggleCreditorAccount"
-          >Show Creditor Account</label
-        >
-      </div>
-      <div class="form-check form-switch my-3">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="toggleDebtorAccount"
-        />
-        <label class="form-check-label" for="toggleDebtorAccount"
-          >Show Debtor Account</label
-        >
-      </div>
+        <div class="col-4">
+            <label class="form-label">Configure table</label>
+            <div class="form-check form-switch">
+                <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="toggleCreditorAccount"
+                />
+                <label class="form-check-label" for="toggleCreditorAccount"
+                >Show Creditor Account</label
+                >
+            </div>
+            <div class="form-check form-switch my-3">
+                <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="toggleDebtorAccount"
+                />
+                <label class="form-check-label" for="toggleDebtorAccount"
+                >Show Debtor Account</label
+                >
+            </div>
 
-      <div class="form-check form-switch my-3">
-        <input class="form-check-input" type="checkbox" id="toggleNoCategory"
-        name="category_missing" onchange="submitFormWithCategoryMissing()"
-               {{ 'checked' if category == 'null' else '' }}
-        />
-        <label class="form-check-label" for="toggleNoCategory">
-          Only transactions without category
-        </label>
-      </div>
+            <div class="form-check form-switch my-3">
+                <input class="form-check-input" type="checkbox" id="toggleNoCategory"
+                       name="category_missing" onchange="submitFormWithCategoryMissing()"
+                       {{ 'checked' if category == 'null' else '' }}
+                />
+                <label class="form-check-label" for="toggleNoCategory">
+                    Only transactions without category
+                </label>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Update the table headers and rows -->
 <div class="table-responsive">
-  <table class="table table-striped my-4">
-    <thead>
-      <tr>
-        <th scope="col">Transaction #</th>
-        <th scope="col">Bank Name</th>
-        <th scope="col">Booking Date</th>
-        <th scope="col">Value Date</th>
-        <th scope="col">Amount</th>
-        <th scope="col">Description</th>
-        <th scope="col" class="creditor-account">Creditor</th>
-        <th scope="col" class="debtor-account">Debtor</th>
-        <th scope="col">Category</th>
-      </tr>
-    </thead>
+    <table class="table table-striped my-4">
+        <thead>
+        <tr>
+            <th scope="col">Transaction #</th>
+            <th scope="col">Bank Name</th>
+            <th scope="col">Booking Date</th>
+            <th scope="col">Value Date</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Description</th>
+            <th scope="col" class="creditor-account">Creditor</th>
+            <th scope="col" class="debtor-account">Debtor</th>
+            <th scope="col">Category</th>
+        </tr>
+        </thead>
 
-    <tbody>
-      {% for transaction in transactions %}
-      <tr
-        class="{% if transaction['amount'] > 0 %}table-success{% elif transaction['amount'] < -100 %}table-danger{% endif %}"
-      >
-        <td>{{ transaction['transactionId'] }}</td>
-        <td
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="IBAN: {{ transaction['iban'] }}"
+        <tbody>
+        {% for transaction in transactions %}
+        <tr
+                class="{% if transaction['amount'] > 0 %}table-success{% elif transaction['amount'] < -100 %}table-danger{% endif %}"
         >
-          {{ transaction['bankName'] }}
-        </td>
-        <td class="text-nowrap">{{ transaction['bookingDate'] }}</td>
-        <td class="text-nowrap">{{ transaction['valueDate'] }}</td>
-        <td
-          class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
-        >
-          {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
-        </td>
-        <td style="max-width: 400px">
-          <div
-            class="description editable"
-            onclick="editDescription(this, '{{ transaction['transactionId'] }}')"
-          >
-            {{ transaction['description'] }}
-          </div>
-        </td>
-        <td class="creditor-account">
-          {{ transaction['creditorName'] if transaction['creditorName'] is not
-          none else '' }}
-          <br />
-          {{ transaction['creditorAccount'] if transaction['creditorAccount'] is
-          not none else '' }}
-        </td>
-        <td class="debtor-account">
-          {{ transaction['debtorName'] if transaction['debtorName'] is not none
-          else '' }}
-          <br />
-          {{ transaction['debtorAccount'] if transaction['debtorAccount'] is not
-          none else '' }}
-        </td>
-        <td class="text-nowrap category">
-          {% if transaction['category'] %} {{ transaction['category'] }}
-
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-danger ms-1 category-remove"
-            onclick="removeCategory('{{ transaction['transactionId'] }}')"
-          >
-            <i class="bi bi-trash"></i>
-          </button>
-          {% else %}
-          <div class="d-flex">
-            <select
-              class="form-select form-select-sm category-select"
-              data-description="{{ transaction['description'] }}"
-              data-creditor="{{ transaction['creditorName'] if transaction['creditorName'] is not none else '' }}"
-              data-debtor="{{ transaction['debtorName'] if transaction['debtorName'] is not none else '' }}"
+            <td>{{ transaction['transactionId'] }}</td>
+            <td
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="IBAN: {{ transaction['iban'] }}"
             >
-              <option value="">Select category</option>
-            </select>
-
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary ms-1"
-              onclick="saveCategory('{{ transaction['transactionId'] }}', this.previousElementSibling.selectedOptions[0].value)"
+                {{ transaction['bankName'] }}
+            </td>
+            <td class="text-nowrap">{{ transaction['bookingDate'] }}</td>
+            <td class="text-nowrap">{{ transaction['valueDate'] }}</td>
+            <td
+                    class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
             >
-              <i class="bi bi-check"></i>
-            </button>
-          </div>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+                {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
+            </td>
+            <td style="max-width: 400px">
+                <div
+                        class="description editable"
+                        onclick="editDescription(this, '{{ transaction['transactionId'] }}')"
+                >
+                    {{ transaction['description'] }}
+                </div>
+            </td>
+            <td class="creditor-account">
+                {{ transaction['creditorName'] if transaction['creditorName'] is not
+                none else '' }}
+                <br/>
+                {{ transaction['creditorAccount'] if transaction['creditorAccount'] is
+                not none else '' }}
+            </td>
+            <td class="debtor-account">
+                {{ transaction['debtorName'] if transaction['debtorName'] is not none
+                else '' }}
+                <br/>
+                {{ transaction['debtorAccount'] if transaction['debtorAccount'] is not
+                none else '' }}
+            </td>
+            <td class="text-nowrap category">
+                {% if transaction['category'] %} {{ transaction['category'] }}
+
+                <button
+                        type="button"
+                        class="btn btn-sm btn-outline-danger ms-1 category-remove"
+                        onclick="removeCategory('{{ transaction['transactionId'] }}')"
+                >
+                    <i class="bi bi-trash"></i>
+                </button>
+                {% else %}
+                <div class="d-flex">
+                    <select
+                            class="form-select form-select-sm category-select"
+                            data-description="{{ transaction['description'] }}"
+                            data-creditor="{{ transaction['creditorName'] if transaction['creditorName'] is not none else '' }}"
+                            data-debtor="{{ transaction['debtorName'] if transaction['debtorName'] is not none else '' }}"
+                    >
+                        <option value="">Select category</option>
+                    </select>
+
+                    <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary ms-1"
+                            onclick="saveCategory('{{ transaction['transactionId'] }}', this.previousElementSibling.selectedOptions[0].value)"
+                    >
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 <style>
-  .category-remove {
-    display: none;
-  }
+    .category-remove {
+      display: none;
+    }
 
-  .category:hover .category-remove {
-    display: inline;
-  }
+    .category:hover .category-remove {
+      display: inline;
+    }
 
-  .category-select {
-    min-width: 200px;
-    text-overflow: ellipsis;
-  }
+    .category-select {
+      min-width: 200px;
+      text-overflow: ellipsis;
+    }
 
-  .suggested-category {
-    border: 2px solid #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  }
+    .suggested-category {
+      border: 2px solid #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
 
-  .editable:hover:not(:has(input)) {
-    cursor: pointer;
-    text-decoration: underline;
-  }
+    .editable:hover:not(:has(input)) {
+      cursor: pointer;
+      text-decoration: underline;
+    }
 </style>
 
 <!-- Add Bootstrap JS -->
