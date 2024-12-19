@@ -1,6 +1,7 @@
 {% extends "base.html" %} {% block title %} Categories {% endblock %} {% block
 content %}
 <h1 class="my-4">Transactions {{ count }}</h1>
+<h2>Sum {{ total }}€ (spendings {{spending_sum}} | income: {{income_sum}})</h2>
 
 <div class="container">
     <div class="row">
@@ -100,10 +101,10 @@ content %}
             <th scope="col">Bank Name</th>
             <th scope="col">Booking Date</th>
             <th scope="col">Value Date</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Description</th>
             <th scope="col" class="creditor-account">Creditor</th>
             <th scope="col" class="debtor-account">Debtor</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Description</th>
             <th scope="col">Category</th>
         </tr>
         </thead>
@@ -123,19 +124,6 @@ content %}
             </td>
             <td class="text-nowrap">{{ transaction['bookingDate'] }}</td>
             <td class="text-nowrap">{{ transaction['valueDate'] }}</td>
-            <td
-                    class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
-            >
-                {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
-            </td>
-            <td style="max-width: 400px">
-                <div
-                        class="description editable"
-                        onclick="editDescription(this, '{{ transaction['transactionId'] }}')"
-                >
-                    {{ transaction['description'] }}
-                </div>
-            </td>
             <td class="creditor-account">
                 {{ transaction['creditorName'] if transaction['creditorName'] is not
                 none else '' }}
@@ -149,6 +137,19 @@ content %}
                 <br/>
                 {{ transaction['debtorAccount'] if transaction['debtorAccount'] is not
                 none else '' }}
+            </td>
+            <td
+                    class="{% if transaction['amount'] > 0 %}text-success{% elif transaction['amount'] < 0 %}text-danger{% endif %}"
+            >
+                {{ transaction['amount'] }}&nbsp;{{ transaction['currency'] }}
+            </td>
+            <td style="max-width: 400px">
+                <div
+                        class="description editable"
+                        onclick="editDescription(this, '{{ transaction['transactionId'] }}')"
+                >
+                    {{ transaction['description'] }}
+                </div>
             </td>
             <td class="text-nowrap category">
                 {% if transaction['category'] %} {{ transaction['category'] }}

@@ -22,11 +22,22 @@ def index():
     end_date = request.args.get("end_date", "")
 
     transactions = database.get_transactions(bank_name, start_date, end_date, category)
+    # sum all negative numbers:
+    spending_sum = sum([transaction['amount'] for transaction in transactions if transaction['amount'] < 0])
+    spending_sum = "{:.2f}".format(spending_sum)
+    income_sum = sum([transaction['amount'] for transaction in transactions if transaction['amount'] > 0])
+    income_sum = "{:.2f}".format(income_sum)
+    total = sum([transaction['amount'] for transaction in transactions])
+    total = "{:.2f}".format(total)
+
     banks = get_banks_from_db()
 
     return render_template(
         "index.html",
         transactions=transactions,
+        spending_sum=spending_sum,
+        income_sum=income_sum,
+        total=total,
         count=len(transactions),
         banks=banks,
         selected_bank=bank_name,
